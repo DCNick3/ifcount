@@ -2,7 +2,9 @@ use std::{collections::HashMap, ops::Deref, sync::Arc};
 
 use serde::Serialize;
 
-use super::Monoid;
+use crate::collector::metrics::MetricCollectorBox;
+
+use super::{Monoid, VisitorCollector};
 
 #[derive(Clone)]
 struct Buckets<const N: usize>(Arc<[u64; N]>);
@@ -113,7 +115,6 @@ impl<const N: usize> Hist<N> {
         }
     }
 
-    // TODO: macro
     pub fn describe(&self) -> HistSummary {
         HistSummary {
             sum: self.sum(),
