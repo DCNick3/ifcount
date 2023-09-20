@@ -5,6 +5,14 @@ use syn::visit::{self, Visit};
 
 use super::prelude::*;
 
+pub trait Monoid: Sized {
+    fn init() -> Self;
+    fn unite(self, rhs: Self) -> Self;
+    fn reduce(iter: impl Iterator<Item = Self>) -> Self {
+        iter.fold(Self::init(), |x, y| x.unite(y))
+    }
+}
+
 #[derive(Clone)]
 struct Buckets<const N: usize>(Arc<[u64; N]>);
 
@@ -15,12 +23,6 @@ impl<const N: usize> Deref for Buckets<N> {
         &self.0
     }
 }
-
-// impl<const N: usize> DerefMut for Buckets<N> {
-//     fn deref_mut(&mut self) -> &mut Self::Target {
-//         &mut self.0
-//     }
-// }
 
 impl<const N: usize> Serialize for Buckets<N> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -35,21 +37,52 @@ impl<const N: usize> Serialize for Buckets<N> {
     }
 }
 /// N is the number of buckets exluding inf
+/// buckets for values 0, 1, 2, .. N-1 are created
 /// buckets[n] == x <=> there are x functions with n arguments
-#[derive(Clone, Serialize)]
-pub struct FnArgsHist<const N: usize> {
-    buckets: Buckets<N>, // buckets length should never be changed
+#[derive(Clone)]
+pub struct Hist<const N: usize> {
+    /// buckets length should never be changed
+    buckets: Buckets<N>,
+    /// number of observed values that are greater or equal to N
     inf: u64,
-    inf_vals: Vec<usize>, // put observed values that dont fit into buckets here
+    /// observed values that dont fit into any of the buckets are put here
+    inf_vals: Vec<usize>,
 }
 
-impl<const N: usize> FnArgsHist<N> {
+impl<const N: usize> Serialize for Hist<N> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.describe().serialize(serializer)
+    }
+}
+
+#[derive(Serialize)]
+pub struct HistSummary {
+    pub sum: u64,
+    pub count: u64,
+    pub mean: f64,
+    pub mode: Option<usize>,
+}
+
+impl<const N: usize> Monoid for Hist<N> {
+    fn init() -> Self {
+        Self::default()
+    }
+
+    fn unite(self, rhs: Self) -> Self {
+        self + rhs
+    }
+}
+
+impl<const N: usize> Hist<N> {
     /// total number of observations
-    fn count(&self) -> u64 {
+    pub fn count(&self) -> u64 {
         self.buckets.iter().sum::<u64>() + self.inf
     }
     /// total sum of the observed values
-    fn sum(&self) -> u64 {
+    pub fn sum(&self) -> u64 {
         self.buckets
             .into_iter()
             .enumerate()
@@ -57,9 +90,50 @@ impl<const N: usize> FnArgsHist<N> {
             .sum::<u64>()
             + self.inf_vals.iter().sum::<usize>() as u64
     }
+
+    pub fn mean(&self) -> f64 {
+        self.sum() as f64 / self.count() as f64
+    }
+
+    /// None means that inf is the most frequent value,
+    /// so the number of buckets should probably be increased
+    pub fn mode(&self) -> Option<usize> {
+        let (mode, &mode_observations) = self
+            .buckets
+            .iter()
+            .enumerate()
+            // not very correct as it returns the last value if
+            // there are two maxes, but oh well
+            .max_by(|(_, count1), (_, count2)| count1.cmp(count2))
+            .expect("empty histogram");
+        if mode_observations <= self.inf {
+            None
+        } else {
+            Some(mode)
+        }
+    }
+
+    pub fn observe(&mut self, val: usize) {
+        if val >= N {
+            self.inf += 1;
+            self.inf_vals.push(val);
+        } else {
+            Arc::make_mut(&mut self.buckets.0)[val] += 1;
+        }
+    }
+
+    // TODO: macro
+    pub fn describe(&self) -> HistSummary {
+        HistSummary {
+            sum: self.sum(),
+            count: self.count(),
+            mean: self.mean(),
+            mode: self.mode(),
+        }
+    }
 }
 
-impl<const N: usize> Default for FnArgsHist<N> {
+impl<const N: usize> Default for Hist<N> {
     fn default() -> Self {
         Self {
             buckets: Buckets(Arc::new([0; N])),
@@ -69,7 +143,7 @@ impl<const N: usize> Default for FnArgsHist<N> {
     }
 }
 
-impl<const N: usize> std::ops::AddAssign for FnArgsHist<N> {
+impl<const N: usize> std::ops::AddAssign for Hist<N> {
     fn add_assign(&mut self, mut rhs: Self) {
         // every bucket is guaranteed to exist as N is the same
         for (k, v) in rhs.buckets.into_iter().enumerate() {
@@ -80,7 +154,7 @@ impl<const N: usize> std::ops::AddAssign for FnArgsHist<N> {
     }
 }
 
-impl<const N: usize> std::ops::Add for FnArgsHist<N> {
+impl<const N: usize> std::ops::Add for Hist<N> {
     type Output = Self;
 
     fn add(mut self, rhs: Self) -> Self::Output {
@@ -89,56 +163,25 @@ impl<const N: usize> std::ops::Add for FnArgsHist<N> {
     }
 }
 
-impl<const N: usize> Visit<'_> for FnArgsHist<N> {
+#[derive(Default)]
+pub struct FnArgsHist(Hist<16>);
+
+impl Visit<'_> for FnArgsHist {
     fn visit_signature(&mut self, i: &'_ syn::Signature) {
         let arg_count = i.inputs.len();
-        if arg_count >= self.buckets.len() {
-            self.inf += 1;
-            self.inf_vals.push(arg_count);
-        } else {
-            Arc::make_mut(&mut self.buckets.0)[arg_count] += 1;
-        }
+        self.0.observe(arg_count);
         visit::visit_signature(self, i);
     }
 }
 
-#[derive(Default)]
-pub struct FnArgsAvg(FnArgsHist<16>);
-
-impl Visit<'_> for FnArgsAvg {
-    fn visit_signature(&mut self, i: &'_ syn::Signature) {
-        self.0.visit_signature(i);
-    }
-}
-
-impl Visitor for FnArgsAvg {
-    fn visitor() -> super::prelude::MetricCollectorBox {
-        util::VisitorCollector::new(
-            "avg_fn_arg_count",
-            FnArgsAvg::default(),
-            |v| v,
-            |v| {
-                let total_hist: FnArgsHist<16> = v
-                    .into_iter()
-                    .map(|FnArgsAvg(hist)| hist.to_owned())
-                    .fold(FnArgsHist::default(), |x, y| x + y);
-                total_hist.sum() as f64 / total_hist.count() as f64
-            },
-        )
-        .make_box()
-    }
-}
-
-impl<const N: usize> Visitor for FnArgsHist<N> {
+impl Visitor for FnArgsHist {
     fn visitor() -> MetricCollectorBox {
         util::VisitorCollector::new(
             "fn_arg_histogram",
             FnArgsHist::default(),
             |v| v,
-            |v: &[FnArgsHist<N>]| {
-                v.into_iter()
-                    .map(|hist| hist.to_owned())
-                    .fold(FnArgsHist::default(), |acc, x| acc + x)
+            |v: &[FnArgsHist]| {
+                Monoid::reduce(v.into_iter().map(|FnArgsHist(hist)| hist.to_owned()))
             },
         )
         .make_box()
