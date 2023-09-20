@@ -17,7 +17,7 @@ impl Visit<'_> for FnArgsHist {
 impl Visitor for FnArgsHist {
     fn visitor() -> MetricCollectorBox {
         util::VisitorCollector::new(
-            "fn_arg_histogram",
+            "fn_arg_hist",
             FnArgsHist::default(),
             |v| v,
             |v: &[FnArgsHist]| {
