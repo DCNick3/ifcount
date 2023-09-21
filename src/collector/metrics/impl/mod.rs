@@ -32,7 +32,7 @@ pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
         if_count::visitor(),
         avg_fn_arg_count::FnArgsHist::visitor(),
         // avg_fn_arg_count::Hist::<16>::visitor(),
-        avg_attrs::StructFields::visitor(),
-        avg_attrs::EnumVariants::visitor()
+        avg_attrs::Structs::visitor(),
+        avg_attrs::Enums::visitor()
     ]
 }
