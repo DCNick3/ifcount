@@ -2,7 +2,7 @@ use super::prelude::*;
 use util::{Hist, Monoid};
 
 #[derive(Default, Serialize, Clone)]
-pub struct Enums {
+struct Enums {
     variants_hist: Hist<64>,
     attrs_hist: Hist<64>,
     variant_attrs_hist: Hist<64>,
@@ -32,14 +32,12 @@ impl Visit<'_> for Enums {
     }
 }
 
-impl Visitor for Enums {
-    fn visitor() -> MetricCollectorBox {
-        util::VisitorCollector::new(
-            "enum_metrics",
-            Self::default(),
-            |v| v,
-            |v| Monoid::reduce(v.iter().cloned()),
-        )
-        .make_box()
-    }
+pub fn make_collector() -> MetricCollectorBox {
+    util::VisitorCollector::new(
+        "enum_metrics",
+        Enums::default(),
+        |v| v,
+        |v| Monoid::reduce(v.iter().cloned()),
+    )
+    .make_box()
 }

@@ -3,7 +3,7 @@ use syn::Visibility;
 use util::{Hist, Monoid};
 
 #[derive(Default, Serialize, Clone)]
-pub struct Structs {
+struct Structs {
     fields_hist: Hist<64>,
     public_fields_hist: Hist<64>,
     attrs_hist: Hist<32>,
@@ -41,14 +41,12 @@ impl Visit<'_> for Structs {
     }
 }
 
-impl Visitor for Structs {
-    fn visitor() -> MetricCollectorBox {
-        util::VisitorCollector::new(
-            "structs_metrics",
-            Self::default(),
-            |v| v,
-            |v| Monoid::reduce(v.iter().cloned()),
-        )
-        .make_box()
-    }
+pub fn make_collector() -> MetricCollectorBox {
+    util::VisitorCollector::new(
+        "structs_metrics",
+        Structs::default(),
+        |v| v,
+        |v| Monoid::reduce(v.iter().cloned()),
+    )
+    .make_box()
 }

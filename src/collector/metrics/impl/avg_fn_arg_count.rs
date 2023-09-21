@@ -14,16 +14,12 @@ impl Visit<'_> for FnArgsHist {
     }
 }
 
-impl Visitor for FnArgsHist {
-    fn visitor() -> MetricCollectorBox {
-        util::VisitorCollector::new(
-            "fn_arg_hist",
-            FnArgsHist::default(),
-            |v| v,
-            |v: &[FnArgsHist]| {
-                Monoid::reduce(v.into_iter().map(|FnArgsHist(hist)| hist.to_owned()))
-            },
-        )
-        .make_box()
-    }
+pub fn make_collector() -> MetricCollectorBox {
+    util::VisitorCollector::new(
+        "fn_arg_hist",
+        FnArgsHist::default(),
+        |v| v,
+        |v: &[FnArgsHist]| Monoid::reduce(v.into_iter().map(|FnArgsHist(hist)| hist.to_owned())),
+    )
+    .make_box()
 }

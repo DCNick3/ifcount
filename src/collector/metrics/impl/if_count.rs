@@ -13,7 +13,7 @@ impl Visit<'_> for VisitorIfCount {
     }
 }
 
-pub fn visitor() -> MetricCollectorBox {
+pub fn make_collector() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "if_count",
         VisitorIfCount::default(),

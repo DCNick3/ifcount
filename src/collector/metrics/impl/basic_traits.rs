@@ -3,7 +3,7 @@ use syn::TraitItem;
 use util::{Hist, Monoid};
 
 #[derive(Default, Clone, Serialize)]
-pub struct TraitDefinitions {
+struct TraitDefinitions {
     generic_params_num_hist: Hist<16>,
     supertraits_num_hist: Hist<16>,
     default_fn_hist: Hist<128>,
@@ -55,14 +55,12 @@ impl Visit<'_> for TraitDefinitions {
     }
 }
 
-impl Visitor for TraitDefinitions {
-    fn visitor() -> MetricCollectorBox {
-        util::VisitorCollector::new(
-            "trait_definition_metrics",
-            Self::default(),
-            |v| v,
-            |v| Monoid::reduce(v.iter().cloned()),
-        )
-        .make_box()
-    }
+pub fn make_collector() -> MetricCollectorBox {
+    util::VisitorCollector::new(
+        "trait_definition_metrics",
+        TraitDefinitions::default(),
+        |v| v,
+        |v| Monoid::reduce(v.iter().cloned()),
+    )
+    .make_box()
 }
