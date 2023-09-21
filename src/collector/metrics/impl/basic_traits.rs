@@ -51,7 +51,8 @@ impl Visit<'_> for TraitDefinitions {
                 .iter()
                 .filter(|trait_item| matches!(trait_item, TraitItem::Type(_)))
                 .count(),
-        )
+        );
+        syn::visit::visit_item_trait(self, i);
     }
 }
 
