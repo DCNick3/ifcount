@@ -2,9 +2,7 @@ use std::{collections::HashMap, ops::Deref, sync::Arc};
 
 use serde::Serialize;
 
-use crate::collector::metrics::MetricCollectorBox;
-
-use super::{Monoid, VisitorCollector};
+use super::Monoid;
 
 #[derive(Clone)]
 struct Buckets<const N: usize>(Arc<[u64; N]>);
