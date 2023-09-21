@@ -8,6 +8,7 @@ mod prelude {
         metrics::{util, MetricCollector, MetricCollectorBox},
         FileAst,
     };
+    pub use serde::Serialize;
     pub use syn::visit::Visit;
 }
 
@@ -21,9 +22,11 @@ pub trait Visitor: for<'ast> Visit<'ast> {
     fn visitor() -> MetricCollectorBox;
 }
 
-mod avg_attrs;
 mod avg_fn_arg_count;
 mod avg_fn_depth;
+mod basic_enums;
+mod basic_structs;
+mod basic_traits;
 mod if_count;
 
 pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
@@ -31,8 +34,8 @@ pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
         avg_fn_depth::visitor(),
         if_count::visitor(),
         avg_fn_arg_count::FnArgsHist::visitor(),
-        avg_attrs::Structs::visitor(),
-        avg_attrs::Enums::visitor(),
-        avg_attrs::TraitDefinitions::visitor()
+        basic_structs::Structs::visitor(),
+        basic_enums::Enums::visitor(),
+        basic_traits::TraitDefinitions::visitor()
     ]
 }
