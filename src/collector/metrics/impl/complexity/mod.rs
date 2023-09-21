@@ -3,7 +3,7 @@
 mod r#impl;
 
 use super::prelude::*;
-use syn::{ExprClosure, ImplItemFn, ItemFn};
+use syn::{visit, ExprClosure, ImplItemFn, ItemFn};
 use util::{Hist, Monoid};
 
 #[derive(Default, Clone, Serialize)]
@@ -29,17 +29,20 @@ impl Monoid for ComplexityStats {
 impl Visit<'_> for ComplexityStats {
     fn visit_expr_closure(&mut self, i: &'_ ExprClosure) {
         self.closure_complexity
-            .observe(r#impl::eval_expr(&i.body, Default::default()).0 as usize)
+            .observe(r#impl::eval_expr(&i.body, Default::default()).0 as usize);
+        visit::visit_expr_closure(self, i);
     }
 
     fn visit_impl_item_fn(&mut self, i: &'_ ImplItemFn) {
         self.impl_item_fn_complexity
-            .observe(r#impl::eval_block(&i.block, Default::default()).0 as usize)
+            .observe(r#impl::eval_block(&i.block, Default::default()).0 as usize);
+        visit::visit_impl_item_fn(self, i);
     }
 
     fn visit_item_fn(&mut self, i: &'_ ItemFn) {
         self.item_fn_complexity
-            .observe(r#impl::eval_block(&i.block, Default::default()).0 as usize)
+            .observe(r#impl::eval_block(&i.block, Default::default()).0 as usize);
+        visit::visit_item_fn(self, i);
     }
 }
 
