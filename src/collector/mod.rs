@@ -10,6 +10,8 @@ use std::ffi::OsStr;
 use std::path::Path;
 use tracing::{error, info, info_span};
 
+pub use git::LimitedCrab;
+
 pub struct File<T> {
     // path, relative to repo root
     path: RelativePathBuf,
@@ -79,10 +81,29 @@ fn count_metrics(metrics: &BTreeMap<String, serde_json::Value>) -> usize {
     metrics.values().map(count_submetrics).sum::<usize>()
 }
 
-pub fn collect_repo(repo_path: &Path) -> Result<RepoResult> {
-    let meta = git::get_repo_metadata(repo_path).context("Getting repo metadata")?;
-
+fn collect_file_metrics(files: &[FileAst]) -> Result<BTreeMap<String, serde_json::Value>> {
     let collectors = metrics::get_metric_collectors();
+
+    info!("Collecting metrics from {} files...", files.len());
+    let collect_metrics_span = info_span!("collect_metrics").entered();
+    let metrics = collectors
+        .iter()
+        .map(|collector| {
+            (
+                collector.name().to_string(),
+                collector.collect_metric(files),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    collect_metrics_span.exit();
+
+    info!("Collected {} repo metrics!", count_metrics(&metrics));
+
+    Ok(metrics)
+}
+
+pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
+    let meta = git::get_repo_metadata(repo_path).context("Getting repo metadata")?;
 
     info!("Loading files from {}...", repo_path.display());
     let load_files_span = info_span!("load_files").entered();
@@ -102,20 +123,36 @@ pub fn collect_repo(repo_path: &Path) -> Result<RepoResult> {
         .collect::<Vec<_>>();
     load_files_span.exit();
 
-    info!("Collecting metrics from {} files...", files.len());
-    let collect_metrics_span = info_span!("collect_metrics").entered();
-    let metrics = collectors
-        .iter()
-        .map(|collector| {
-            (
-                collector.name().to_string(),
-                collector.collect_metric(&files),
-            )
-        })
-        .collect::<BTreeMap<_, _>>();
-    collect_metrics_span.exit();
+    let metrics = collect_file_metrics(&files)?;
 
-    info!("Collected {} metrics!", count_metrics(&metrics));
+    Ok(RepoResult { meta, metrics })
+}
+
+pub async fn collect_github_repo(crab: &LimitedCrab, repo_name: &str) -> Result<RepoResult> {
+    info!("Downloading https://github.com/{}...", repo_name);
+
+    let files = git::fetch_repo(crab, repo_name)
+        .await
+        .context("Fetching repo")?;
+
+    let load_files_span = info_span!("parse_files").entered();
+    let files = files
+        .into_iter()
+        .filter_map(File::parse)
+        .collect::<Vec<_>>();
+    load_files_span.exit();
+
+    let mut metrics = collect_file_metrics(&files)?;
+    metrics.extend(
+        git::get_repo_metrics(crab, repo_name)
+            .await
+            .context("Getting repo metrics")?,
+    );
+    info!("Collected {} total metrics!", count_metrics(&metrics));
+
+    let meta = RepoMetadata {
+        url: format!("git@github.com:{}.git", repo_name),
+    };
 
     Ok(RepoResult { meta, metrics })
 }

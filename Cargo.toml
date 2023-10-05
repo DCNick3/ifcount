@@ -25,6 +25,17 @@ serde_json = "1.0.105"
 rayon = "1.7.0"
 
 gix = "0.53.1"
+octocrab = "0.30.1"
+url = "2.4.1"
+governor = "0.6.0"
+async-trait = "0.1.73"
+http = "0.2.9"
+hyper = "0.14.27"
+snafu = "0.7.5"
+cacache = "11.7.1"
+directories = "5.0.1"
+
+tokio = { version = "1.32.0", features = ["rt-multi-thread", "macros"] }
 
 relative-path = "1.9.0"
 pathdiff = "0.2.1"
@@ -35,6 +46,9 @@ ignore = "0.4.20"
 shared-version = true
 publish = false
 tag-prefix = ""
+
+[profile.release]
+debug = true
 
 # The profile that 'cargo dist' will build with
 [profile.dist]
