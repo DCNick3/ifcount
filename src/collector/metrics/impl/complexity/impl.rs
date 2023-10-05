@@ -214,7 +214,7 @@ fn eval_expr_if(expr_if: &ExprIf, state: State) -> Index {
         + eval_block(then_branch, state.increase_nesting())
         + else_branch
             .as_ref()
-            .map(|(_, expr)| Index::one() + eval_expr(&expr, state.increase_nesting()))
+            .map(|(_, expr)| Index::one() + eval_expr(expr, state.increase_nesting()))
             .unwrap_or_else(Index::zero)
 }
 
@@ -228,7 +228,7 @@ fn eval_expr_match(expr_match: &ExprMatch, state: State) -> Index {
             .map(|arm| {
                 arm.guard
                     .as_ref()
-                    .map(|(_, expr)| Index::with_context(state) + eval_expr(&expr, state))
+                    .map(|(_, expr)| Index::with_context(state) + eval_expr(expr, state))
                     .unwrap_or_else(Index::zero)
                     + eval_expr(&arm.body, state.increase_nesting())
             })

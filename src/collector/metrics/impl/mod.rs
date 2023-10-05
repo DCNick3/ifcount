@@ -10,27 +10,32 @@ mod prelude {
 }
 
 macro_rules! collectors {
-    ($($collector:expr),*) => {
+    (
+        $($collector:expr),*
+        $(,)?
+    ) => {
         vec![$($collector.make_box()),*]
     };
 }
 
-mod avg_fn_arg_count;
-mod avg_fn_depth;
 mod basic_enums;
 mod basic_structs;
 mod basic_traits;
 mod complexity;
+mod fn_arg_count;
+mod fn_depth;
 mod if_count;
+mod stmt_size;
 
 pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
     collectors![
-        avg_fn_depth::make_collector(),
+        fn_depth::make_collector(),
         if_count::make_collector(),
-        avg_fn_arg_count::make_collector(),
+        fn_arg_count::make_collector(),
         basic_structs::make_collector(),
         basic_enums::make_collector(),
         basic_traits::make_collector(),
-        complexity::make_collector()
+        complexity::make_collector(),
+        stmt_size::make_collector(),
     ]
 }

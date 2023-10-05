@@ -19,7 +19,7 @@ pub fn make_collector() -> MetricCollectorBox {
         "fn_arg_hist",
         FnArgsHist::default(),
         |v| v,
-        |v: &[FnArgsHist]| Monoid::reduce(v.into_iter().map(|FnArgsHist(hist)| hist.to_owned())),
+        |v: &[FnArgsHist]| Monoid::reduce(v.iter().map(|FnArgsHist(hist)| hist.to_owned())),
     )
     .make_box()
 }

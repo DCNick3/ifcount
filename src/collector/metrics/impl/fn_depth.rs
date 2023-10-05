@@ -1,12 +1,12 @@
 use super::prelude::*;
-use average::{Estimate, Mean};
+use crate::collector::metrics::util::{Hist, Monoid};
 use syn::{Block, Expr, ExprClosure, ImplItemFn, ItemFn};
 
 #[derive(Default)]
 struct VisitorAvgMethodDepth {
     current_depth: u32,
     max_depth: u32,
-    estimator: Mean,
+    hist: Hist<64>,
 }
 
 impl VisitorAvgMethodDepth {
@@ -20,7 +20,7 @@ impl VisitorAvgMethodDepth {
 
         let depth = self.max_depth - start_depth;
         assert_ne!(depth, 0, "depth should never be 0");
-        self.estimator.add(depth as f64);
+        self.hist.observe(depth as usize);
         self.max_depth = old_max_depth;
     }
 
@@ -68,8 +68,8 @@ pub fn make_collector() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "avg_fn_depth",
         VisitorAvgMethodDepth::default(),
-        |v| v.estimator,
-        |v| util::merge_all(v).mean(),
+        |v| v.hist,
+        |v| Monoid::reduce(v.iter().cloned()),
     )
     .make_box()
 }
