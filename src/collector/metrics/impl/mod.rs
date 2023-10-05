@@ -26,6 +26,7 @@ mod complexity;
 mod fn_arg_count;
 mod fn_depth;
 mod if_count;
+mod methods;
 mod stmt_size;
 
 pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
