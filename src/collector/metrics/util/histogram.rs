@@ -53,7 +53,6 @@ impl<const N: usize> Serialize for Hist<N> {
 pub struct HistSummary {
     pub sum: u64,
     pub count: u64,
-    pub mean: f64,
     pub mode: Option<usize>,
 }
 
@@ -80,10 +79,6 @@ impl<const N: usize> Hist<N> {
             .map(|(val, count)| val as u64 * count)
             .sum::<u64>()
             + self.inf_vals.iter().sum::<usize>() as u64
-    }
-
-    pub fn mean(&self) -> f64 {
-        self.sum() as f64 / self.count() as f64
     }
 
     /// None means that inf is the most frequent value,
@@ -117,7 +112,6 @@ impl<const N: usize> Hist<N> {
         HistSummary {
             sum: self.sum(),
             count: self.count(),
-            mean: self.mean(),
             mode: self.mode(),
         }
     }
