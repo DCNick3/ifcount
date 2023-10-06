@@ -19,6 +19,7 @@ macro_rules! collectors {
 }
 
 mod basic_enums;
+mod basic_files;
 mod basic_structs;
 mod basic_traits;
 mod complexity;
@@ -37,5 +38,6 @@ pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
         basic_traits::make_collector(),
         complexity::make_collector(),
         stmt_size::make_collector(),
+        basic_files::make_collector(),
     ]
 }
