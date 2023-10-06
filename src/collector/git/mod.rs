@@ -96,19 +96,6 @@ pub async fn fetch_repo(crab: &LimitedCrab, repo_name: &str) -> Result<Vec<File<
         downloaded_files.push(file);
     }
 
-    for (name, size) in &wanted_files {
-        let contents = crab
-            .get_file(repo_name, &commit_hash, name)
-            .await
-            .with_context(|| format!("Cannot get file {}", name))?;
-
-        cur_span.pb_inc(*size);
-        downloaded_files.push(File {
-            path: RelativePathBuf::from(name.clone()),
-            content: contents,
-        });
-    }
-
     Ok(downloaded_files)
 }
 
