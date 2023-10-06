@@ -1,6 +1,6 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
-use syn::{Ident, ImplItem, ImplItemFn};
+use syn::{ImplItem, ImplItemFn};
 
 use crate::collector::metrics::util::{Hist, Monoid};
 
@@ -64,7 +64,7 @@ pub fn make_collector() -> MetricCollectorBox {
         "lcom4_per_impl_block",
         ImplLcom4::default(),
         |v| v.0,
-        |v| Monoid::reduce(v.into_iter().cloned()),
+        |v| Monoid::reduce(v.iter().cloned()),
     )
     .make_box()
 }
@@ -94,7 +94,7 @@ fn walk(
     *to_visit = to_visit
         .iter()
         .filter(|x| !current_neigbours.contains(x))
-        .map(|&x| x)
+        .copied()
         .collect();
     for next in visit_next {
         walk(next, neighbours, to_visit);
