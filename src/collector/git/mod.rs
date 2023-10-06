@@ -1,6 +1,7 @@
 mod octocrab_ext;
 
 use anyhow::{Context, Result};
+use futures::{pin_mut, stream, StreamExt};
 use gix::remote::Direction;
 use indicatif::ProgressStyle;
 use relative_path::RelativePathBuf;
@@ -68,6 +69,32 @@ pub async fn fetch_repo(crab: &LimitedCrab, repo_name: &str) -> Result<Vec<File<
     cur_span.pb_set_length(total_size);
 
     let mut downloaded_files = Vec::with_capacity(wanted_files.len());
+
+    let futures_stream = stream::iter(wanted_files.iter().map(|&(ref name, size)| {
+        let commit_hash = commit_hash.clone();
+
+        async move {
+            let content = crab
+                .get_file(repo_name, &commit_hash, name)
+                .await
+                .with_context(|| format!("Cannot get file {}", name))?;
+
+            let file = File {
+                path: RelativePathBuf::from(name.clone()),
+                content,
+            };
+
+            Ok::<_, anyhow::Error>((size, file))
+        }
+    }))
+    .buffer_unordered(16);
+    pin_mut!(futures_stream);
+
+    while let Some(result) = futures_stream.next().await {
+        let (size, file) = result?;
+        cur_span.pb_inc(size);
+        downloaded_files.push(file);
+    }
 
     for (name, size) in &wanted_files {
         let contents = crab

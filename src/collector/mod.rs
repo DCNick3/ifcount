@@ -69,10 +69,11 @@ fn count_submetrics(value: &serde_json::Value) -> usize {
     use serde_json::Value;
 
     match value {
-        Value::Null | Value::Bool(_) | Value::String(_) | Value::Array(_) => {
+        Value::Bool(_) | Value::String(_) | Value::Array(_) => {
             panic!("Unknown type encountered in metrics: {}", value)
         }
-        Value::Number(_) => 1,
+        // null can be encountered in histogram's `mode` field
+        Value::Null | Value::Number(_) => 1,
         Value::Object(obj) => obj.values().map(count_submetrics).sum::<usize>(),
     }
 }

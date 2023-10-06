@@ -55,7 +55,8 @@ impl CliCommand {
                 let token = if let Ok(github_token) = std::env::var("GITHUB_TOKEN") {
                     Some(github_token)
                 } else {
-                    warn!("GITHUB_TOKEN not set, rate limiting will be very strict");
+                    // most of the time we'll be talking to `raw.githubusercontent.com`, so it's not that bad if we don't have a token
+                    warn!("GITHUB_TOKEN not set, not authenticating when talking to GitHub API");
                     None
                 };
                 let cache_path = dirs.cache_dir().join("gh-cache");

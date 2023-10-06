@@ -8,11 +8,23 @@ The <img src="media/ifcount.gif" alt="ifcount" height="18" style="vertical-align
 
 ## Usage example
 
+To run against a github repo:
+
 ```bash
-$ ifcount collect path_to_your_repo
+$ ifcount collect-github-repo DCNick3/shin
 ```
 
 This command will run all the metric collectors and print the results to stdout in json format.
+
+The fetched sources will be cached in `~/.cache/ifcount` (see [docs for directories crate](https://docs.rs/directories/latest/directories/) for locations on other OSes) so that the next time you run the command it will be much faster.
+
+If you want to run against a local repo, you can do so. NOTE: this will not collect some metrics that are specific to github repos (like number of stars, number of forks, etc.)
+
+The command is:
+
+```bash
+$ ifcount collect-local-repo path_to_your_repo
+```
 
 ## Json example
 

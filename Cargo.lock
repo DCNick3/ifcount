@@ -1884,6 +1884,7 @@ dependencies = [
  "cacache",
  "clap",
  "directories",
+ "futures",
  "gix",
  "governor",
  "http",
