@@ -8,9 +8,9 @@ use util::{Hist, Monoid};
 
 #[derive(Default, Clone, Serialize)]
 struct ComplexityStats {
-    item_fn_complexity: Hist<128>,
-    impl_item_fn_complexity: Hist<128>,
-    closure_complexity: Hist<128>,
+    item_fn: Hist<128>,
+    impl_item_fn: Hist<128>,
+    closure: Hist<128>,
 }
 
 impl Monoid for ComplexityStats {
@@ -19,28 +19,28 @@ impl Monoid for ComplexityStats {
     }
     fn unite(self, rhs: Self) -> Self {
         Self {
-            item_fn_complexity: self.item_fn_complexity + rhs.item_fn_complexity,
-            impl_item_fn_complexity: self.impl_item_fn_complexity + rhs.impl_item_fn_complexity,
-            closure_complexity: self.closure_complexity + rhs.closure_complexity,
+            item_fn: self.item_fn + rhs.item_fn,
+            impl_item_fn: self.impl_item_fn + rhs.impl_item_fn,
+            closure: self.closure + rhs.closure,
         }
     }
 }
 
 impl Visit<'_> for ComplexityStats {
     fn visit_expr_closure(&mut self, i: &'_ ExprClosure) {
-        self.closure_complexity
+        self.closure
             .observe(r#impl::eval_expr(&i.body, Default::default()).0 as usize);
         visit::visit_expr_closure(self, i);
     }
 
     fn visit_impl_item_fn(&mut self, i: &'_ ImplItemFn) {
-        self.impl_item_fn_complexity
+        self.impl_item_fn
             .observe(r#impl::eval_block(&i.block, Default::default()).0 as usize);
         visit::visit_impl_item_fn(self, i);
     }
 
     fn visit_item_fn(&mut self, i: &'_ ItemFn) {
-        self.item_fn_complexity
+        self.item_fn
             .observe(r#impl::eval_block(&i.block, Default::default()).0 as usize);
         visit::visit_item_fn(self, i);
     }

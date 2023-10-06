@@ -4,11 +4,11 @@ use util::{Hist, Monoid};
 
 #[derive(Default, Clone, Serialize)]
 struct TraitDefinitions {
-    generic_params_num_hist: Hist<16>,
-    supertraits_num_hist: Hist<16>,
-    default_fn_hist: Hist<128>,
-    all_fn_hist: Hist<256>,
-    assoc_types_hist: Hist<128>,
+    generic_param_count: Hist<16>,
+    supertrait_count: Hist<16>,
+    default_fn_count: Hist<128>,
+    all_fn_count: Hist<256>,
+    assoc_type_count: Hist<128>,
 }
 
 impl Monoid for TraitDefinitions {
@@ -17,21 +17,20 @@ impl Monoid for TraitDefinitions {
     }
     fn unite(self, rhs: Self) -> Self {
         Self {
-            generic_params_num_hist: self.generic_params_num_hist + rhs.generic_params_num_hist,
-            supertraits_num_hist: self.supertraits_num_hist + rhs.supertraits_num_hist,
-            default_fn_hist: self.default_fn_hist + rhs.default_fn_hist,
-            all_fn_hist: self.all_fn_hist + rhs.all_fn_hist,
-            assoc_types_hist: self.assoc_types_hist + rhs.assoc_types_hist,
+            generic_param_count: self.generic_param_count + rhs.generic_param_count,
+            supertrait_count: self.supertrait_count + rhs.supertrait_count,
+            default_fn_count: self.default_fn_count + rhs.default_fn_count,
+            all_fn_count: self.all_fn_count + rhs.all_fn_count,
+            assoc_type_count: self.assoc_type_count + rhs.assoc_type_count,
         }
     }
 }
 
 impl Visit<'_> for TraitDefinitions {
     fn visit_item_trait(&mut self, i: &'_ syn::ItemTrait) {
-        self.generic_params_num_hist
-            .observe(i.generics.params.len());
-        self.supertraits_num_hist.observe(i.supertraits.len());
-        self.default_fn_hist.observe(
+        self.generic_param_count.observe(i.generics.params.len());
+        self.supertrait_count.observe(i.supertraits.len());
+        self.default_fn_count.observe(
             i.items
                 .iter()
                 .filter(|trait_item| match trait_item {
@@ -40,13 +39,13 @@ impl Visit<'_> for TraitDefinitions {
                 })
                 .count(),
         );
-        self.all_fn_hist.observe(
+        self.all_fn_count.observe(
             i.items
                 .iter()
                 .filter(|trait_item| matches!(trait_item, TraitItem::Fn(_)))
                 .count(),
         );
-        self.assoc_types_hist.observe(
+        self.assoc_type_count.observe(
             i.items
                 .iter()
                 .filter(|trait_item| matches!(trait_item, TraitItem::Type(_)))
@@ -58,7 +57,7 @@ impl Visit<'_> for TraitDefinitions {
 
 pub fn make_collector() -> MetricCollectorBox {
     util::VisitorCollector::new(
-        "trait_definition_metrics",
+        "trait_def",
         TraitDefinitions::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),

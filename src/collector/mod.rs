@@ -56,8 +56,8 @@ impl FileText {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RepoResult {
-    meta: RepoMetadata,
-    metrics: BTreeMap<String, serde_json::Value>,
+    pub meta: RepoMetadata,
+    pub metrics: BTreeMap<String, serde_json::Value>,
 }
 
 // TODO: collect timings?
@@ -80,6 +80,41 @@ fn count_submetrics(value: &serde_json::Value) -> usize {
 
 fn count_metrics(metrics: &BTreeMap<String, serde_json::Value>) -> usize {
     metrics.values().map(count_submetrics).sum::<usize>()
+}
+
+fn get_submetric_list(pre_path: &mut String, result: &mut Vec<String>, value: &serde_json::Value) {
+    use serde_json::Value;
+
+    match value {
+        Value::Bool(_) | Value::String(_) | Value::Array(_) => {
+            panic!("Unknown type encountered in metrics: {}", value)
+        }
+        Value::Null | Value::Number(_) => result.push(pre_path.clone()),
+        Value::Object(obj) => {
+            for (name, value) in obj.iter() {
+                pre_path.push('.');
+                pre_path.push_str(name);
+                get_submetric_list(pre_path, result, value);
+
+                for _ in 0..name.len() + 1 {
+                    pre_path.pop();
+                }
+            }
+        }
+    }
+}
+
+pub fn get_metric_list(metrics: &BTreeMap<String, serde_json::Value>) -> Vec<String> {
+    let mut result = Vec::new();
+    let mut pre_path = String::new();
+
+    for (name, value) in metrics {
+        pre_path.push_str(name);
+        get_submetric_list(&mut pre_path, &mut result, value);
+        pre_path.clear();
+    }
+
+    result
 }
 
 fn collect_file_metrics(files: &[FileAst]) -> Result<BTreeMap<String, serde_json::Value>> {

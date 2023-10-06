@@ -58,6 +58,8 @@ pub async fn fetch_repo(crab: &LimitedCrab, repo_name: &str) -> Result<Vec<File<
         .into_iter()
         .filter(|i| i.type_ == TreeItemType::Blob)
         .filter(|i| i.path.ends_with(".rs"))
+        // we don't want vendored dependencies
+        .filter(|i| !i.path.starts_with("vendor/"))
         .map(|i| (i.path, i.size.unwrap()))
         .collect::<Vec<_>>();
 
@@ -122,5 +124,5 @@ pub async fn get_repo_metrics(
         }
     );
 
-    Ok(BTreeMap::from([("repo_metrics".to_string(), repo_metrics)]))
+    Ok(BTreeMap::from([("repo".to_string(), repo_metrics)]))
 }

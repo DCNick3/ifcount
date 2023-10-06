@@ -603,6 +603,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "crowbook-text-processing"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a749441fe0b30ba727c31367438f7e2f001e6ec23d3c5f417834f2fa17098a27"
+dependencies = [
+ "lazy_static",
+ "regex",
+]
+
+[[package]]
 name = "crypto-common"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1883,6 +1893,7 @@ dependencies = [
  "async-trait",
  "cacache",
  "clap",
+ "crowbook-text-processing",
  "directories",
  "futures",
  "gix",

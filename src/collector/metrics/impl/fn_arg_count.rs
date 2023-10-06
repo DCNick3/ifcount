@@ -4,9 +4,9 @@ use super::prelude::*;
 use util::{Hist, Monoid};
 
 #[derive(Default)]
-pub struct FnArgsHist(Hist<16>);
+pub struct FnArgsCount(Hist<16>);
 
-impl Visit<'_> for FnArgsHist {
+impl Visit<'_> for FnArgsCount {
     fn visit_signature(&mut self, i: &'_ syn::Signature) {
         let arg_count = i.inputs.len();
         self.0.observe(arg_count);
@@ -16,10 +16,10 @@ impl Visit<'_> for FnArgsHist {
 
 pub fn make_collector() -> MetricCollectorBox {
     util::VisitorCollector::new(
-        "fn_arg_hist",
-        FnArgsHist::default(),
+        "fn_arg_count",
+        FnArgsCount::default(),
         |v| v,
-        |v: &[FnArgsHist]| Monoid::reduce(v.iter().map(|FnArgsHist(hist)| hist.to_owned())),
+        |v: &[FnArgsCount]| Monoid::reduce(v.iter().map(|FnArgsCount(hist)| hist.to_owned())),
     )
     .make_box()
 }

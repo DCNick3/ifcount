@@ -66,7 +66,7 @@ impl Visit<'_> for VisitorAvgMethodDepth {
 
 pub fn make_collector() -> MetricCollectorBox {
     util::VisitorCollector::new(
-        "avg_fn_depth",
+        "fn_depth",
         VisitorAvgMethodDepth::default(),
         |v| v.hist,
         |v| Monoid::reduce(v.iter().cloned()),

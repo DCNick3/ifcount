@@ -43,6 +43,8 @@ pathdiff = "0.2.1"
 
 ignore = "0.4.20"
 
+crowbook-text-processing = "1.1.1"
+
 [workspace.metadata.release]
 shared-version = true
 publish = false

@@ -37,22 +37,22 @@ impl Visit<'_> for FileStats {
 
 #[derive(Clone, Default, Serialize)]
 struct Files {
-    structs_hist: Hist<64>,
-    enums_hist: Hist<64>,
-    impls_hist: Hist<64>,
-    all_functions_hist: Hist<64>,
-    pub_functions_hist: Hist<32>,
+    struct_count: Hist<64>,
+    enum_count: Hist<64>,
+    impl_block_count: Hist<64>,
+    all_fn_count: Hist<64>,
+    pub_fn_count: Hist<32>,
 }
 
 impl Visit<'_> for Files {
     fn visit_file(&mut self, i: &'_ syn::File) {
         let mut file_stats = FileStats::default();
         syn::visit::visit_file(&mut file_stats, i);
-        self.structs_hist.observe(file_stats.structs_count);
-        self.enums_hist.observe(file_stats.enums_count);
-        self.impls_hist.observe(file_stats.impls_count);
-        self.all_functions_hist.observe(file_stats.all_fns_count);
-        self.pub_functions_hist.observe(file_stats.pub_fns_count);
+        self.struct_count.observe(file_stats.structs_count);
+        self.enum_count.observe(file_stats.enums_count);
+        self.impl_block_count.observe(file_stats.impls_count);
+        self.all_fn_count.observe(file_stats.all_fns_count);
+        self.pub_fn_count.observe(file_stats.pub_fns_count);
     }
 }
 
@@ -63,18 +63,18 @@ impl Monoid for Files {
 
     fn unite(self, rhs: Self) -> Self {
         Self {
-            structs_hist: self.structs_hist + rhs.structs_hist,
-            enums_hist: self.enums_hist + rhs.enums_hist,
-            impls_hist: self.impls_hist + rhs.impls_hist,
-            all_functions_hist: self.all_functions_hist + rhs.all_functions_hist,
-            pub_functions_hist: self.pub_functions_hist + rhs.pub_functions_hist,
+            struct_count: self.struct_count + rhs.struct_count,
+            enum_count: self.enum_count + rhs.enum_count,
+            impl_block_count: self.impl_block_count + rhs.impl_block_count,
+            all_fn_count: self.all_fn_count + rhs.all_fn_count,
+            pub_fn_count: self.pub_fn_count + rhs.pub_fn_count,
         }
     }
 }
 
 pub fn make_collector() -> MetricCollectorBox {
     util::VisitorCollector::new(
-        "per_file_metrics",
+        "per_file",
         Files::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),
@@ -107,7 +107,7 @@ mod tests {
         let syntax_tree: File = syn::parse2(code).unwrap();
         let mut files = Files::default();
         files.visit_file(&syntax_tree);
-        assert_eq!(files.structs_hist.sum(), 2);
-        assert_eq!(files.enums_hist.sum(), 1)
+        assert_eq!(files.struct_count.sum(), 2);
+        assert_eq!(files.enum_count.sum(), 1)
     }
 }

@@ -36,6 +36,28 @@ enum CliCommand {
     },
     /// Collect metrics from a github repository
     CollectGithubRepo { repo_name: String },
+    /// Get a list of supported metrics
+    ///
+    /// Work internally by running against `DCNick3/ifcount`
+    ListMetrics {
+        #[clap(long)]
+        latex: bool,
+    },
+}
+
+async fn make_crab(dirs: &ProjectDirs) -> Result<LimitedCrab> {
+    let token = if let Ok(github_token) = std::env::var("GITHUB_TOKEN") {
+        Some(github_token)
+    } else {
+        // most of the time we'll be talking to `raw.githubusercontent.com`, so it's not that bad if we don't have a token
+        warn!("GITHUB_TOKEN not set, not authenticating when talking to GitHub API");
+        None
+    };
+    let cache_path = dirs.cache_dir().join("gh-cache");
+
+    LimitedCrab::new(token, cache_path)
+        .await
+        .context("Creating octocrab")
 }
 
 impl CliCommand {
@@ -52,17 +74,7 @@ impl CliCommand {
                 Ok(())
             }
             CliCommand::CollectGithubRepo { repo_name } => {
-                let token = if let Ok(github_token) = std::env::var("GITHUB_TOKEN") {
-                    Some(github_token)
-                } else {
-                    // most of the time we'll be talking to `raw.githubusercontent.com`, so it's not that bad if we don't have a token
-                    warn!("GITHUB_TOKEN not set, not authenticating when talking to GitHub API");
-                    None
-                };
-                let cache_path = dirs.cache_dir().join("gh-cache");
-                let crab = LimitedCrab::new(token, cache_path)
-                    .await
-                    .context("Creating octocrab")?;
+                let crab = make_crab(dirs).await?;
 
                 let result = collector::collect_github_repo(&crab, &repo_name)
                     .await
@@ -72,6 +84,28 @@ impl CliCommand {
                     "{}",
                     serde_json::to_string_pretty(&result).context("Serializing results")?
                 );
+
+                Ok(())
+            }
+            CliCommand::ListMetrics { latex } => {
+                let crab = make_crab(dirs).await?;
+
+                let result = collector::collect_github_repo(&crab, "DCNick3/ifcount")
+                    .await
+                    .context("Collecting metrics")?;
+
+                let metric_list = collector::get_metric_list(&result.metrics);
+
+                for metric in metric_list {
+                    if latex {
+                        println!(
+                            "\\metric{{{}}}{{INSERT HERE}}",
+                            crowbook_text_processing::escape::tex(&metric)
+                        );
+                    } else {
+                        println!("{}", metric);
+                    }
+                }
 
                 Ok(())
             }

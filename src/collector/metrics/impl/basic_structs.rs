@@ -4,10 +4,10 @@ use util::{Hist, Monoid};
 
 #[derive(Default, Serialize, Clone)]
 struct Structs {
-    fields_hist: Hist<64>,
-    public_fields_hist: Hist<64>,
-    attrs_hist: Hist<32>,
-    field_attrs_hist: Hist<32>,
+    fields_count: Hist<64>,
+    public_fields_count: Hist<64>,
+    attrs_count: Hist<32>,
+    field_attr_count: Hist<32>,
 }
 
 impl Monoid for Structs {
@@ -17,33 +17,33 @@ impl Monoid for Structs {
 
     fn unite(self, rhs: Self) -> Self {
         Self {
-            fields_hist: self.fields_hist + rhs.fields_hist,
-            public_fields_hist: self.public_fields_hist + rhs.public_fields_hist,
-            attrs_hist: self.attrs_hist + rhs.attrs_hist,
-            field_attrs_hist: self.field_attrs_hist + rhs.field_attrs_hist,
+            fields_count: self.fields_count + rhs.fields_count,
+            public_fields_count: self.public_fields_count + rhs.public_fields_count,
+            attrs_count: self.attrs_count + rhs.attrs_count,
+            field_attr_count: self.field_attr_count + rhs.field_attr_count,
         }
     }
 }
 
 impl Visit<'_> for Structs {
     fn visit_item_struct(&mut self, i: &'_ syn::ItemStruct) {
-        self.fields_hist.observe(i.fields.len());
-        self.public_fields_hist.observe(
+        self.fields_count.observe(i.fields.len());
+        self.public_fields_count.observe(
             i.fields
                 .iter()
                 .filter(|field| matches!(field.vis, Visibility::Public(_)))
                 .count(),
         );
-        self.field_attrs_hist
+        self.field_attr_count
             .observe(i.fields.iter().map(|x| x.attrs.len()).sum());
-        self.attrs_hist.observe(i.attrs.len());
+        self.attrs_count.observe(i.attrs.len());
         syn::visit::visit_item_struct(self, i);
     }
 }
 
 pub fn make_collector() -> MetricCollectorBox {
     util::VisitorCollector::new(
-        "structs_metrics",
+        "structs",
         Structs::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),

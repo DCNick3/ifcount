@@ -3,9 +3,9 @@ use util::{Hist, Monoid};
 
 #[derive(Default, Serialize, Clone)]
 struct Enums {
-    variants_hist: Hist<64>,
-    attrs_hist: Hist<64>,
-    variant_attrs_hist: Hist<64>,
+    variant_count: Hist<64>,
+    attr_count: Hist<64>,
+    variant_attr_count: Hist<64>,
 }
 
 impl Monoid for Enums {
@@ -15,18 +15,18 @@ impl Monoid for Enums {
 
     fn unite(self, rhs: Self) -> Self {
         Self {
-            variants_hist: self.variants_hist + rhs.variants_hist,
-            attrs_hist: self.attrs_hist + rhs.attrs_hist,
-            variant_attrs_hist: self.variant_attrs_hist + rhs.variant_attrs_hist,
+            variant_count: self.variant_count + rhs.variant_count,
+            attr_count: self.attr_count + rhs.attr_count,
+            variant_attr_count: self.variant_attr_count + rhs.variant_attr_count,
         }
     }
 }
 
 impl Visit<'_> for Enums {
     fn visit_item_enum(&mut self, i: &'_ syn::ItemEnum) {
-        self.variants_hist.observe(i.variants.len());
-        self.attrs_hist.observe(i.attrs.len());
-        self.variant_attrs_hist
+        self.variant_count.observe(i.variants.len());
+        self.attr_count.observe(i.attrs.len());
+        self.variant_attr_count
             .observe(i.variants.iter().map(|x| x.attrs.len()).sum());
         syn::visit::visit_item_enum(self, i);
     }
@@ -34,7 +34,7 @@ impl Visit<'_> for Enums {
 
 pub fn make_collector() -> MetricCollectorBox {
     util::VisitorCollector::new(
-        "enum_metrics",
+        "enums",
         Enums::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),
