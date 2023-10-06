@@ -35,7 +35,12 @@ enum CliCommand {
         repo_path: PathBuf,
     },
     /// Collect metrics from a github repository
-    CollectGithubRepo { repo_name: String },
+    CollectGithubRepo {
+        repo_name: String,
+    },
+    BulkCollectGithubRepos {
+        list_path: PathBuf,
+    },
     /// Get a list of supported metrics
     ///
     /// Work internally by running against `DCNick3/ifcount`
@@ -106,6 +111,27 @@ impl CliCommand {
                         println!("{}", metric);
                     }
                 }
+
+                Ok(())
+            }
+            CliCommand::BulkCollectGithubRepos { list_path } => {
+                let crab = make_crab(dirs).await?;
+
+                let repo_list = std::fs::read_to_string(&list_path).context("Reading repo list")?;
+                let repo_list = repo_list
+                    .lines()
+                    .map(|line| line.trim())
+                    .filter(|line| !line.is_empty())
+                    .collect::<Vec<_>>();
+
+                let results = collector::bulk_collect_github_repos(&crab, &repo_list)
+                    .await
+                    .context("Collecting metrics")?;
+
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&results).context("Serializing results")?
+                );
 
                 Ok(())
             }

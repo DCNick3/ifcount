@@ -20,6 +20,7 @@ pub use octocrab_ext::LimitedCrab;
 pub struct RepoMetadata {
     // name: String,
     pub url: String,
+    pub commit: String,
 }
 
 pub fn get_repo_metadata(path: &Path) -> Result<RepoMetadata> {
@@ -36,7 +37,15 @@ pub fn get_repo_metadata(path: &Path) -> Result<RepoMetadata> {
         .to_bstring()
         .to_string();
 
-    Ok(RepoMetadata { url })
+    let commit = repo
+        .head()
+        .context("Cannot find head")?
+        .into_fully_peeled_id()
+        .context("HEAD is not yet defined")?
+        .context("Cannot peel to commit")?
+        .to_string();
+
+    Ok(RepoMetadata { url, commit })
 }
 
 fn progressbar_style() -> ProgressStyle {
@@ -47,9 +56,13 @@ fn progressbar_style() -> ProgressStyle {
 }
 
 #[instrument(skip(crab))]
-pub async fn fetch_repo(crab: &LimitedCrab, repo_name: &str) -> Result<Vec<File<String>>> {
-    let (commit_hash, tree) = crab
-        .get_repo_tree(repo_name)
+pub async fn fetch_repo(
+    crab: &LimitedCrab,
+    repo_name: &str,
+    commit: &str,
+) -> Result<Vec<File<String>>> {
+    let tree = crab
+        .get_repo_tree(repo_name, &commit)
         .await
         .context("Cannot get repo tree")?;
 
@@ -73,7 +86,7 @@ pub async fn fetch_repo(crab: &LimitedCrab, repo_name: &str) -> Result<Vec<File<
     let mut downloaded_files = Vec::with_capacity(wanted_files.len());
 
     let futures_stream = stream::iter(wanted_files.iter().map(|&(ref name, size)| {
-        let commit_hash = commit_hash.clone();
+        let commit_hash = commit.to_owned();
 
         async move {
             let content = crab

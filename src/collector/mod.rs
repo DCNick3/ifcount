@@ -3,12 +3,14 @@ mod metrics;
 
 use crate::collector::git::RepoMetadata;
 use anyhow::{Context, Result};
+use indicatif::ProgressStyle;
 use relative_path::RelativePathBuf;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::path::Path;
-use tracing::{error, info, info_span};
+use tracing::{error, info, info_span, instrument, Span};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 pub use git::LimitedCrab;
 
@@ -164,10 +166,13 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
     Ok(RepoResult { meta, metrics })
 }
 
+#[instrument(skip(crab))]
 pub async fn collect_github_repo(crab: &LimitedCrab, repo_name: &str) -> Result<RepoResult> {
     info!("Downloading https://github.com/{}...", repo_name);
 
-    let files = git::fetch_repo(crab, repo_name)
+    let commit = crab.get_latest_commit(repo_name).await?;
+
+    let files = git::fetch_repo(crab, repo_name, &commit)
         .await
         .context("Fetching repo")?;
 
@@ -188,7 +193,39 @@ pub async fn collect_github_repo(crab: &LimitedCrab, repo_name: &str) -> Result<
 
     let meta = RepoMetadata {
         url: format!("git@github.com:{}.git", repo_name),
+        commit,
     };
 
     Ok(RepoResult { meta, metrics })
+}
+
+fn progressbar_style() -> ProgressStyle {
+    ProgressStyle::default_bar()
+        .template("{span_child_prefix}{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len}")
+        .unwrap()
+        .progress_chars("#>-")
+}
+
+#[instrument(skip(crab, repo_list))]
+pub async fn bulk_collect_github_repos(
+    crab: &LimitedCrab,
+    repo_list: &[&str],
+) -> Result<Vec<RepoResult>> {
+    let span = Span::current();
+    span.pb_set_style(&progressbar_style());
+    span.pb_set_length(repo_list.len() as u64);
+
+    let mut results = Vec::with_capacity(repo_list.len());
+
+    for repo_name in repo_list {
+        let result = collect_github_repo(crab, repo_name)
+            .await
+            .with_context(|| format!("Collecting metrics for {}", repo_name))?;
+
+        span.pb_inc(1);
+
+        results.push(result);
+    }
+
+    Ok(results.into_iter().collect::<Vec<_>>())
 }

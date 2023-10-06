@@ -146,7 +146,7 @@ impl LimitedCrab {
     }
 
     #[instrument(skip(self))]
-    pub async fn get_repo_tree(&self, repo_name: &str) -> Result<(String, Tree)> {
+    pub async fn get_latest_commit(&self, repo_name: &str) -> Result<String> {
         self.api_rate_limiter
             .until_ready()
             .instrument(tracing::info_span!("wait_rate_limit"))
@@ -161,9 +161,12 @@ impl LimitedCrab {
             .await
             .context("Getting commits")?;
 
-        let latest_commit_sha = &page.items[0].sha;
+        Ok(page.items[0].sha.clone())
+    }
 
-        let cache_key = format!("tree/{}", latest_commit_sha);
+    #[instrument(skip(self))]
+    pub async fn get_repo_tree(&self, repo_name: &str, commit: &str) -> Result<Tree> {
+        let cache_key = format!("tree/{}", commit);
 
         if let Some(cached) = self
             .cache
@@ -171,7 +174,7 @@ impl LimitedCrab {
             .await
             .context("Reading from cache")?
         {
-            return Ok((latest_commit_sha.to_string(), cached));
+            return Ok(cached);
         }
 
         self.api_rate_limiter
@@ -181,7 +184,7 @@ impl LimitedCrab {
         let tree: RateLimitInfo<Tree> = self
             .crab
             .get(
-                format!("/repos/{repo_name}/git/trees/{latest_commit_sha}?recursive=true"),
+                format!("/repos/{repo_name}/git/trees/{commit}?recursive=true"),
                 None::<&()>,
             )
             .instrument(tracing::info_span!("get_tree"))
@@ -201,16 +204,11 @@ impl LimitedCrab {
             .await
             .context("Writing to cache")?;
 
-        Ok((latest_commit_sha.to_string(), tree))
+        Ok(tree)
     }
 
     #[instrument(skip(self))]
     pub async fn get_file(&self, repo_name: &str, commit: &str, path: &str) -> Result<String> {
-        self.user_content_rate_limiter
-            .until_ready()
-            .instrument(tracing::info_span!("wait_rate_limit"))
-            .await;
-
         let cache_key = format!("file/{repo_name}/{commit}/{path}");
         if let Some(cached) = self
             .cache
@@ -221,7 +219,17 @@ impl LimitedCrab {
             return Ok(cached);
         }
 
-        let url = format!("https://raw.githubusercontent.com/{repo_name}/{commit}/{path}");
+        self.user_content_rate_limiter
+            .until_ready()
+            .instrument(tracing::info_span!("wait_rate_limit"))
+            .await;
+
+        let url_path = path
+            .split('/')
+            .map(urlencoding::encode)
+            .collect::<Vec<_>>()
+            .join("/");
+        let url = format!("https://raw.githubusercontent.com/{repo_name}/{commit}/{url_path}");
 
         let RawBody(contents) = self
             .crab

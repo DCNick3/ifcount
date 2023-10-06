@@ -41,7 +41,8 @@ pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
         complexity::make_collector(),
         stmt_size::make_collector(),
         basic_files::make_collector(),
-        methods::make_collector(),
+        // the implementation is too slow to work on some repos
+        // methods::make_collector(),
         macros::make_collector(),
     ]
 }
