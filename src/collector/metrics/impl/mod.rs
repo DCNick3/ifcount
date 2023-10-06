@@ -26,6 +26,7 @@ mod complexity;
 mod fn_arg_count;
 mod fn_depth;
 mod if_count;
+mod macros;
 mod methods;
 mod stmt_size;
 
@@ -40,6 +41,7 @@ pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
         complexity::make_collector(),
         stmt_size::make_collector(),
         basic_files::make_collector(),
-        methods::make_collector()
+        methods::make_collector(),
+        macros::make_collector(),
     ]
 }
