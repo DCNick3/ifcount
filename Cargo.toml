@@ -7,7 +7,7 @@ repository = "https://github.com/DCNick3/ifcount"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-syn = { version = "2.0.29", features = ["full", "visit", "extra-traits"] }
+syn = { path = "crates/par-syn", default-features = false, features = ["derive", "parsing", "printing", "clone-impls", "full", "visit", "extra-traits"] }
 
 clap = { version = "4.4.0", features = ["derive"] }
 
@@ -18,13 +18,14 @@ indicatif = "0.17.6"
 tracing-indicatif = "0.3.5"
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+#console-subscriber = "0.1.10"
 
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.105"
 
 rayon = "1.7.0"
+stacker = "0.1.15"
 
-gix = "0.53.1"
 octocrab = "0.30.1"
 url = "2.4.1"
 governor = "0.6.0"
@@ -32,11 +33,16 @@ async-trait = "0.1.73"
 http = "0.2.9"
 hyper = "0.14.27"
 snafu = "0.7.5"
-cacache = "11.7.1"
+cacache = { version = "11.7.1", default-features = false, features = ["tokio-runtime"] }
 directories = "5.0.1"
 urlencoding = "2.1.3"
 
+zstd = "0.12.4"
+bincode = "1.3.3"
+
+
 tokio = { version = "1.32.0", features = ["rt-multi-thread", "macros"] }
+#async-std = { version = "1.12.0", features = ["attributes"] }
 futures = "0.3.28"
 
 relative-path = "1.9.0"
@@ -53,6 +59,12 @@ tag-prefix = ""
 
 [profile.release]
 debug = true
+
+[workspace]
+members = [
+    "crates/par-proc-macro2",
+    "crates/par-syn",
+]
 
 # The profile that 'cargo dist' will build with
 [profile.dist]

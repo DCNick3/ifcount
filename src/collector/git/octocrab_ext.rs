@@ -48,12 +48,14 @@ impl Cache {
         let content = cacache::read_hash(&self.directory, &meta.integrity)
             .await
             .context("Reading cache entry")?;
-        let content = serde_json::from_slice(&content).context("Deserializing cache entry")?;
+        let content = zstd::decode_all(&content[..]).context("Decompressing cache entry")?;
+        let content = bincode::deserialize(&content).context("Deserializing cache entry")?;
         Ok(Some(content))
     }
 
     pub async fn set<T: Serialize>(&self, key: &str, value: &T) -> Result<()> {
-        let content = serde_json::to_vec(value).context("Serializing cache entry")?;
+        let content = bincode::serialize(value).context("Serializing cache entry")?;
+        let content = zstd::encode_all(&content[..], 5).context("Compressing cache entry")?;
         cacache::write(&self.directory, key, &content)
             .await
             .context("Writing cache entry")?;
@@ -207,9 +209,15 @@ impl LimitedCrab {
         Ok(tree)
     }
 
-    #[instrument(skip(self))]
-    pub async fn get_file(&self, repo_name: &str, commit: &str, path: &str) -> Result<String> {
-        let cache_key = format!("file/{repo_name}/{commit}/{path}");
+    #[instrument(skip(self, tree_item), fields(path = %tree_item.path))]
+    pub async fn get_file(
+        &self,
+        repo_name: &str,
+        commit: &str,
+        tree_item: &TreeItem,
+    ) -> Result<String> {
+        let hash = &tree_item.sha;
+        let cache_key = format!("file/{hash}");
         if let Some(cached) = self
             .cache
             .get(&cache_key)
@@ -224,7 +232,8 @@ impl LimitedCrab {
             .instrument(tracing::info_span!("wait_rate_limit"))
             .await;
 
-        let url_path = path
+        let url_path = tree_item
+            .path
             .split('/')
             .map(urlencoding::encode)
             .collect::<Vec<_>>()

@@ -39,11 +39,11 @@ impl<
 }
 
 impl<
-        V: for<'ast> syn::visit::Visit<'ast> + Default + 'static,
+        V: for<'ast> syn::visit::Visit<'ast> + Default + Send + Sync + 'static,
         M: 'static,
         AM: Serialize + 'static,
-        Extract: Fn(V) -> M + 'static,
-        Aggregate: Fn(&[M]) -> AM + 'static,
+        Extract: Fn(V) -> M + Send + Sync + 'static,
+        Aggregate: Fn(&[M]) -> AM + Send + Sync + 'static,
     > MetricCollector for VisitorCollector<V, M, AM, Extract, Aggregate>
 {
     type Metric = M;

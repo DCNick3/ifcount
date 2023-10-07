@@ -1,10 +1,7 @@
 use super::MetricCollectorBox;
 
 mod prelude {
-    pub use crate::collector::{
-        metrics::{util, MetricCollector, MetricCollectorBox},
-        FileAst,
-    };
+    pub use crate::collector::metrics::{util, MetricCollector, MetricCollectorBox};
     pub use serde::Serialize;
     pub use syn::visit::Visit;
 }

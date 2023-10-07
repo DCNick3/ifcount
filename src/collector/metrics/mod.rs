@@ -1,12 +1,11 @@
 mod r#impl;
 pub mod util;
 
-use super::FileAst;
 use serde::Serialize;
 use tracing::info_span;
 
 /// A type-erased metric collector
-pub struct MetricCollectorBox(Box<dyn MetricCollectorBoxed>);
+pub struct MetricCollectorBox(Box<dyn MetricCollectorBoxed + Send + Sync + 'static>);
 
 impl MetricCollectorBox {
     pub fn name(&self) -> &'static str {
@@ -22,7 +21,7 @@ impl MetricCollectorBox {
     }
 }
 
-pub trait MetricCollector: Sized + 'static {
+pub trait MetricCollector: Sized + Send + Sync + 'static {
     type Metric;
     type AggregatedMetric: Serialize;
 
@@ -49,14 +48,14 @@ impl<M: Serialize, C: MetricCollector<AggregatedMetric = M>> MetricCollectorBoxe
         C::name(self)
     }
 
-    #[tracing::instrument(skip(self, files), fields(metric = %self.name()))]
     fn collect_metric(&self, files: &[FileAst]) -> serde_json::Value {
-        // TODO: parallel?
         let metrics = files
             .iter()
             .map(|file| {
                 let _span = info_span!("collect_file", file = %file.path).entered();
-                self.collect_file(file)
+                let result = self.collect_file(file);
+
+                result
             })
             .collect::<Vec<_>>();
         let metric = self.aggregate_metrics(&metrics);
@@ -64,4 +63,5 @@ impl<M: Serialize, C: MetricCollector<AggregatedMetric = M>> MetricCollectorBoxe
     }
 }
 
+use crate::collector::FileAst;
 pub use r#impl::get_metric_collectors;

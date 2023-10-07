@@ -1,5 +1,6 @@
 //! Code taken from https://github.com/rossmacarthur/complexity, ported to syn 2.0 and adapted to work with our codebase.
 
+use crate::stack::ensure_sufficient_stack;
 use std::{iter, ops};
 use syn::{
     BinOp, Block, Expr, ExprArray, ExprAssign, ExprAsync, ExprAwait, ExprBinary, ExprBlock,
@@ -278,7 +279,7 @@ fn eval_expr_method_call(expr_method_call: &ExprMethodCall, state: State) -> Ind
 /// complexity. Expressions that create nesting increase the complexity and
 /// expressions that increase the branching increasing the complexity.
 pub fn eval_expr(expr: &Expr, state: State) -> Index {
-    match expr {
+    ensure_sufficient_stack(|| match expr {
         // Expressions that map to multiple expressions.
         // --------------------------------------------
         Expr::Array(ExprArray { elems, .. }) | Expr::Tuple(ExprTuple { elems, .. }) => {
@@ -363,7 +364,7 @@ pub fn eval_expr(expr: &Expr, state: State) -> Index {
 
         // `Expr` is non-exhaustive, so this has to be here. But we should have handled everything.
         _ => Index::zero(),
-    }
+    })
 }
 
 #[cfg(test)]

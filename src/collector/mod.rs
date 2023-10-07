@@ -4,10 +4,12 @@ mod metrics;
 use crate::collector::git::RepoMetadata;
 use anyhow::{Context, Result};
 use indicatif::ProgressStyle;
+use rayon::prelude::*;
 use relative_path::RelativePathBuf;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::ffi::OsStr;
+use std::ops::Deref;
 use std::path::Path;
 use tracing::{error, info, info_span, instrument, Span};
 use tracing_indicatif::span_ext::IndicatifSpanExt;
@@ -40,8 +42,8 @@ impl FileText {
         Some(Self { path, content })
     }
 
-    #[tracing::instrument(skip(self), fields(path = %self.path))]
-    pub fn parse(self) -> Option<FileAst> {
+    #[tracing::instrument(skip(self, span), parent = span, fields(path = %self.path))]
+    pub fn parse(self, span: Span) -> Option<FileAst> {
         let content = match syn::parse_file(&self.content) {
             Ok(v) => v,
             Err(e) => {
@@ -125,8 +127,11 @@ fn collect_file_metrics(files: &[FileAst]) -> Result<BTreeMap<String, serde_json
     info!("Collecting metrics from {} files...", files.len());
     let collect_metrics_span = info_span!("collect_metrics").entered();
     let metrics = collectors
+        // I would __like__ to use `par_iter`, but we hit deadlocks for some reason..
         .iter()
         .map(|collector| {
+            let _span = info_span!(parent: collect_metrics_span.id(), "collect_metric", metric = collector.name()).entered();
+
             (
                 collector.name().to_string(),
                 collector.collect_metric(files),
@@ -141,7 +146,11 @@ fn collect_file_metrics(files: &[FileAst]) -> Result<BTreeMap<String, serde_json
 }
 
 pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
-    let meta = git::get_repo_metadata(repo_path).context("Getting repo metadata")?;
+    // we could have implemented it with gix, but it's a large dep for minor gains
+    let meta = RepoMetadata {
+        url: "<LOCAL>".to_string(),
+        commit: "<LOCAL>".to_string(),
+    };
 
     info!("Loading files from {}...", repo_path.display());
     let load_files_span = info_span!("load_files").entered();
@@ -157,7 +166,9 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
                 pathdiff::diff_paths(v.path(), repo_path).expect("BUG: found path not in repo");
             File::read(repo_path, &path)
         })
-        .filter_map(File::parse)
+        .collect::<Vec<_>>()
+        .into_par_iter()
+        .filter_map(|f| File::parse(f, Span::current()))
         .collect::<Vec<_>>();
     load_files_span.exit();
 
@@ -176,14 +187,16 @@ pub async fn collect_github_repo(crab: &LimitedCrab, repo_name: &str) -> Result<
         .await
         .context("Fetching repo")?;
 
-    let load_files_span = info_span!("parse_files").entered();
-    let files = files
-        .into_iter()
-        .filter_map(File::parse)
-        .collect::<Vec<_>>();
-    load_files_span.exit();
+    let files = tokio::task::block_in_place(move || {
+        let span = info_span!("parse_files").entered();
 
-    let mut metrics = collect_file_metrics(&files)?;
+        files
+            .into_par_iter()
+            .filter_map(|f| File::parse(f, span.deref().clone()))
+            .collect::<Vec<_>>()
+    });
+
+    let mut metrics = tokio::task::block_in_place(move || collect_file_metrics(&files))?;
     metrics.extend(
         git::get_repo_metrics(crab, repo_name)
             .await

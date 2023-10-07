@@ -1,4 +1,5 @@
 mod collector;
+mod stack;
 
 use crate::collector::LimitedCrab;
 use anyhow::{Context, Result};
@@ -153,17 +154,26 @@ async fn main() -> Result<()> {
     #[cfg(windows)]
     let _enabled = ansi_term::enable_ansi_support();
 
+    let filter1 = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new(DEFAULT_ENV_FILTER));
+    let filter2 = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new(DEFAULT_ENV_FILTER));
+
     let indicatif_layer = IndicatifLayer::new();
     let mut stderr = indicatif_layer.get_stderr_writer();
 
-    tracing_subscriber::EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new(DEFAULT_ENV_FILTER))
-        .with_subscriber(
-            tracing_subscriber::registry()
-                .with(tracing_subscriber::fmt::layer().with_writer(stderr.clone()))
-                .with(indicatif_layer),
+    // let tokio_console_layer = console_subscriber::ConsoleLayer::builder().with_default_env().spawn();
+
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::fmt::layer()
+                .with_writer(stderr.clone())
+                .with_filter(filter1),
         )
+        .with(indicatif_layer.with_filter(filter2))
+        // .with(tokio_console_layer)
         .init();
+
     write!(&mut stderr, "{}", BANNER).context("Writing banner")?;
 
     let cli = Cli::parse();

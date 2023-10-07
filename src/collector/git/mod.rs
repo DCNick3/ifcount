@@ -2,13 +2,11 @@ mod octocrab_ext;
 
 use anyhow::{Context, Result};
 use futures::{pin_mut, stream, StreamExt};
-use gix::remote::Direction;
 use indicatif::ProgressStyle;
 use relative_path::RelativePathBuf;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::BTreeMap;
-use std::path::Path;
 use tracing::{instrument, Span};
 use tracing_indicatif::span_ext::IndicatifSpanExt;
 
@@ -21,31 +19,6 @@ pub struct RepoMetadata {
     // name: String,
     pub url: String,
     pub commit: String,
-}
-
-pub fn get_repo_metadata(path: &Path) -> Result<RepoMetadata> {
-    let repo = gix::open(path).context("Cannot open repo")?;
-
-    let remote = repo
-        .find_default_remote(Direction::Fetch)
-        .context("Cannot find default remote")?
-        .context("Cannot find default remote")?;
-
-    let url = remote
-        .url(Direction::Fetch)
-        .context("Cannot find fetch url")?
-        .to_bstring()
-        .to_string();
-
-    let commit = repo
-        .head()
-        .context("Cannot find head")?
-        .into_fully_peeled_id()
-        .context("HEAD is not yet defined")?
-        .context("Cannot peel to commit")?
-        .to_string();
-
-    Ok(RepoMetadata { url, commit })
 }
 
 fn progressbar_style() -> ProgressStyle {
@@ -73,10 +46,9 @@ pub async fn fetch_repo(
         .filter(|i| i.path.ends_with(".rs"))
         // we don't want vendored dependencies
         .filter(|i| !i.path.starts_with("vendor/"))
-        .map(|i| (i.path, i.size.unwrap()))
         .collect::<Vec<_>>();
 
-    let total_size = wanted_files.iter().map(|&(_, size)| size).sum::<u64>();
+    let total_size = wanted_files.iter().map(|i| i.size.unwrap()).sum::<u64>();
 
     let cur_span = Span::current();
 
@@ -85,21 +57,21 @@ pub async fn fetch_repo(
 
     let mut downloaded_files = Vec::with_capacity(wanted_files.len());
 
-    let futures_stream = stream::iter(wanted_files.iter().map(|&(ref name, size)| {
+    let futures_stream = stream::iter(wanted_files.iter().map(|item| {
         let commit_hash = commit.to_owned();
 
         async move {
             let content = crab
-                .get_file(repo_name, &commit_hash, name)
+                .get_file(repo_name, &commit_hash, item)
                 .await
-                .with_context(|| format!("Cannot get file {}", name))?;
+                .with_context(|| format!("Cannot get file {}", item.path))?;
 
             let file = File {
-                path: RelativePathBuf::from(name.clone()),
+                path: RelativePathBuf::from(item.path.clone()),
                 content,
             };
 
-            Ok::<_, anyhow::Error>((size, file))
+            Ok::<_, anyhow::Error>((item.size.unwrap(), file))
         }
     }))
     .buffer_unordered(16);
