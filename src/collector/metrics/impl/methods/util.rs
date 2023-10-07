@@ -1,15 +1,15 @@
-use std::collections::{HashMap, HashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 
 use syn::{parse_quote, Ident, ImplItemFn};
 
 use super::prelude::*;
 
 #[derive(Default, Debug)]
-pub struct FieldSet<'a>(pub HashSet<&'a syn::Member>);
+pub struct FieldSet<'a>(pub FxHashSet<&'a syn::Member>);
 
 #[derive(Default, Debug)]
 pub struct FnFieldSet<'a> {
-    pub field_usage: HashMap<&'a ImplItemFn, FieldSet<'a>>,
+    pub field_usage: FxHashMap<&'a ImplItemFn, FieldSet<'a>>,
 }
 
 impl<'a> FnFieldSet<'a> {
@@ -21,10 +21,10 @@ impl<'a> FnFieldSet<'a> {
 }
 
 #[derive(Default, Debug)]
-pub struct MethodCalls<'a>(pub HashSet<&'a Ident>);
+pub struct MethodCalls<'a>(pub FxHashSet<&'a Ident>);
 
 #[derive(Default, Debug)]
-pub struct FnMethodCalls<'a>(pub HashMap<&'a ImplItemFn, MethodCalls<'a>>);
+pub struct FnMethodCalls<'a>(pub FxHashMap<&'a ImplItemFn, MethodCalls<'a>>);
 
 impl<'a> FnMethodCalls<'a> {
     pub fn related(&self, func1: &'a ImplItemFn, func2: &'a ImplItemFn) -> bool {
@@ -121,7 +121,7 @@ mod tests {
         let mut visitor = MethodCalls::default();
         visitor.visit_file(&syntax_tree);
         assert_eq!(
-            visitor.0,
+            HashSet::from_iter(visitor.0.into_iter()),
             HashSet::from([&parse_quote!(zhizha), &parse_quote!(test)])
         )
     }

@@ -86,19 +86,25 @@ fn count_metrics(metrics: &BTreeMap<String, serde_json::Value>) -> usize {
     metrics.values().map(count_submetrics).sum::<usize>()
 }
 
-fn get_submetric_list(pre_path: &mut String, result: &mut Vec<String>, value: &serde_json::Value) {
+fn flatten_submetrics(
+    pre_path: &mut String,
+    result: &mut BTreeMap<String, serde_json::Value>,
+    value: &serde_json::Value,
+) {
     use serde_json::Value;
 
     match value {
         Value::Bool(_) | Value::String(_) | Value::Array(_) => {
             panic!("Unknown type encountered in metrics: {}", value)
         }
-        Value::Null | Value::Number(_) => result.push(pre_path.clone()),
+        Value::Null | Value::Number(_) => {
+            result.insert(pre_path.clone(), value.clone());
+        }
         Value::Object(obj) => {
             for (name, value) in obj.iter() {
                 pre_path.push('.');
                 pre_path.push_str(name);
-                get_submetric_list(pre_path, result, value);
+                flatten_submetrics(pre_path, result, value);
 
                 for _ in 0..name.len() + 1 {
                     pre_path.pop();
@@ -108,13 +114,15 @@ fn get_submetric_list(pre_path: &mut String, result: &mut Vec<String>, value: &s
     }
 }
 
-pub fn get_metric_list(metrics: &BTreeMap<String, serde_json::Value>) -> Vec<String> {
-    let mut result = Vec::new();
+pub fn flatten_metrics(
+    metrics: &BTreeMap<String, serde_json::Value>,
+) -> BTreeMap<String, serde_json::Value> {
+    let mut result = BTreeMap::new();
     let mut pre_path = String::new();
 
     for (name, value) in metrics {
         pre_path.push_str(name);
-        get_submetric_list(&mut pre_path, &mut result, value);
+        flatten_submetrics(&mut pre_path, &mut result, value);
         pre_path.clear();
     }
 
@@ -173,6 +181,7 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
     load_files_span.exit();
 
     let metrics = collect_file_metrics(&files)?;
+    let metrics = flatten_metrics(&metrics);
 
     Ok(RepoResult { meta, metrics })
 }
@@ -202,7 +211,10 @@ pub async fn collect_github_repo(crab: &LimitedCrab, repo_name: &str) -> Result<
             .await
             .context("Getting repo metrics")?,
     );
-    info!("Collected {} total metrics!", count_metrics(&metrics));
+
+    let metrics = flatten_metrics(&metrics);
+
+    info!("Collected {} total metrics!", metrics.len());
 
     let meta = RepoMetadata {
         url: format!("git@github.com:{}.git", repo_name),

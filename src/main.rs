@@ -100,13 +100,13 @@ impl CliCommand {
                     .await
                     .context("Collecting metrics")?;
 
-                let metric_list = collector::get_metric_list(&result.metrics);
+                let metric_list = result.metrics.keys().collect::<Vec<_>>();
 
                 for metric in metric_list {
                     if latex {
                         println!(
                             "\\metric{{{}}}{{INSERT HERE}}",
-                            crowbook_text_processing::escape::tex(&metric)
+                            crowbook_text_processing::escape::tex(metric)
                         );
                     } else {
                         println!("{}", metric);

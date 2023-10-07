@@ -40,7 +40,7 @@ impl<
 
 impl<
         V: for<'ast> syn::visit::Visit<'ast> + Default + Send + Sync + 'static,
-        M: 'static,
+        M: Send + 'static,
         AM: Serialize + 'static,
         Extract: Fn(V) -> M + Send + Sync + 'static,
         Aggregate: Fn(&[M]) -> AM + Send + Sync + 'static,
