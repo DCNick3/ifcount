@@ -30,32 +30,27 @@ impl Visit<'_> for ImplLcom4 {
             .collect();
         let func_pairs = funcs
             .iter()
-            .flat_map(|x| funcs.iter().map(move |y| (x, y)))
+            .flat_map(|&x| funcs.iter().map(move |&y| (x, y)))
             .filter(|(x, y)| x != y);
-        let related: Vec<(ImplItemFn, ImplItemFn)> = func_pairs
+        let related: Vec<(&ImplItemFn, &ImplItemFn)> = func_pairs
             .filter(|(func1, func2)| {
                 let by_fields = fields.related(func1, func2);
 
                 let by_calls = calls.related(func1, func2);
                 by_fields || by_calls
             })
-            .map(|(&x, &y)| (x.to_owned(), y.to_owned()))
             .collect();
 
-        let mut neighbours: HashMap<ImplItemFn, Vec<ImplItemFn>> = HashMap::new();
+        let mut neighbours: HashMap<&ImplItemFn, Vec<&ImplItemFn>> = HashMap::new();
         for func in funcs {
-            neighbours.insert(func.clone(), vec![]);
+            neighbours.insert(func, vec![]);
         }
         for (func1, func2) in related {
-            neighbours
-                .entry(func1.clone())
-                .and_modify(|x| x.push(func2.clone()));
-            neighbours
-                .entry(func2)
-                .and_modify(|x| x.push(func1.clone()));
+            neighbours.entry(func1).and_modify(|x| x.push(func2));
+            neighbours.entry(func2).and_modify(|x| x.push(func1));
         }
 
-        self.0.observe(num_components(&neighbours));
+        self.0.observe(num_components(neighbours));
     }
 }
 
@@ -69,20 +64,20 @@ pub fn make_collector() -> MetricCollectorBox {
     .make_box()
 }
 
-fn num_components(neighbours: &HashMap<ImplItemFn, Vec<ImplItemFn>>) -> usize {
-    let mut to_visit: Vec<_> = neighbours.keys().collect();
+fn num_components(neighbours: HashMap<&ImplItemFn, Vec<&ImplItemFn>>) -> usize {
+    let mut to_visit: Vec<_> = neighbours.keys().cloned().collect();
     let mut out = 0;
     while !to_visit.is_empty() {
         out += 1;
         let next = to_visit.pop().expect("pop from a nonempty vec");
-        walk(next, neighbours, &mut to_visit);
+        walk(next, &neighbours, &mut to_visit);
     }
     out
 }
 
 fn walk(
     current: &ImplItemFn,
-    neighbours: &HashMap<ImplItemFn, Vec<ImplItemFn>>,
+    neighbours: &HashMap<&ImplItemFn, Vec<&ImplItemFn>>,
     to_visit: &mut Vec<&ImplItemFn>,
 ) {
     let current_neigbours = neighbours.get(current).unwrap();
