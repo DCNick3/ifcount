@@ -71,6 +71,7 @@ members = [
 [profile.dist]
 inherits = "release"
 lto = "thin"
+debug = false
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
