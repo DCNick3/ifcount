@@ -1,7 +1,9 @@
 mod git;
 mod metrics;
+mod rust_code_analysis;
 
 use crate::collector::git::RepoMetadata;
+use ::rust_code_analysis::{ParserTrait, RustParser};
 use anyhow::{Context, Result};
 use indicatif::ProgressStyle;
 use rayon::prelude::*;
@@ -16,6 +18,9 @@ use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 pub use git::LimitedCrab;
 
+use self::rust_code_analysis::RCAMetrics;
+
+#[derive(Clone)]
 pub struct File<T> {
     // path, relative to repo root
     path: RelativePathBuf,
@@ -162,7 +167,7 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
 
     info!("Loading files from {}...", repo_path.display());
     let load_files_span = info_span!("load_files").entered();
-    let files = ignore::WalkBuilder::new(repo_path)
+    let raw_files = ignore::WalkBuilder::new(repo_path)
         .sort_by_file_name(Ord::cmp)
         .require_git(true)
         .build()
@@ -174,16 +179,53 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
                 pathdiff::diff_paths(v.path(), repo_path).expect("BUG: found path not in repo");
             File::read(repo_path, &path)
         })
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>();
+
+    let files = raw_files
+        .clone()
         .into_par_iter()
         .filter_map(|f| File::parse(f, Span::current()))
         .collect::<Vec<_>>();
     load_files_span.exit();
 
-    let metrics = collect_file_metrics(&files)?;
+    let rust_analysis_metrics = aggregate_rust_code_analysis(&raw_files)?;
+    let rust_analysis_metrics: BTreeMap<String, serde_json::Value> =
+        serde_json::from_value(rust_analysis_metrics)?;
+    let mut metrics = collect_file_metrics(&files)?;
+    metrics.extend(rust_analysis_metrics);
     let metrics = flatten_metrics(&metrics);
 
     Ok(RepoResult { meta, metrics })
+}
+
+pub fn aggregate_rust_code_analysis(files: &[File<String>]) -> Result<serde_json::Value> {
+    let byte_sources: Vec<_> = files
+        .into_iter()
+        .map(|x| (&x.path, x.content.as_bytes().to_vec()))
+        .collect();
+
+    let file_metrics = byte_sources
+        .into_iter()
+        .flat_map(|(path, contents)| {
+            let parser = RustParser::new(contents.clone(), &path.to_path(""), None);
+            ::rust_code_analysis::metrics(&parser, &path.to_path(""))
+                .context("Extracting rust_code_analysis metrics")
+                .map_err(|e| error!("{e}"))
+                .map(|space| (path, space))
+        })
+        .map(|(path, mut space)| {
+            space.spaces.clear();
+            (path.to_string(), space)
+        })
+        .map(|(_, space)| space.metrics);
+
+    let mut statisics = RCAMetrics::default();
+    for metrics_batch in file_metrics {
+        statisics.observe(&metrics_batch);
+    }
+
+    let metrics = serde_json::to_value(statisics)?;
+    Ok(metrics)
 }
 
 #[instrument(skip(crab))]
