@@ -188,8 +188,7 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
         .collect::<Vec<_>>();
     load_files_span.exit();
 
-    let rust_analysis_metrics = aggregate_rust_code_analysis(&raw_files)?;
-    let rust_analysis_metrics = BTreeMap::from([("rca".to_string(), rust_analysis_metrics)]);
+    let rust_analysis_metrics = collect_rust_code_analysis(&raw_files)?;
     let mut metrics = collect_file_metrics(&files)?;
     metrics.extend(rust_analysis_metrics);
     let metrics = flatten_metrics(&metrics);
@@ -197,7 +196,9 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
     Ok(RepoResult { meta, metrics })
 }
 
-pub fn aggregate_rust_code_analysis(files: &[File<String>]) -> Result<serde_json::Value> {
+pub fn collect_rust_code_analysis(
+    files: &[File<String>],
+) -> Result<BTreeMap<String, serde_json::Value>> {
     let byte_sources: Vec<_> = files
         .into_iter()
         .map(|x| (&x.path, x.content.as_bytes().to_vec()))
@@ -225,7 +226,7 @@ pub fn aggregate_rust_code_analysis(files: &[File<String>]) -> Result<serde_json
     }
 
     let metrics = serde_json::to_value(statisics)?;
-    Ok(metrics)
+    Ok(BTreeMap::from([("rca".to_string(), metrics)]))
 }
 
 #[instrument(skip(crab))]
@@ -234,20 +235,23 @@ pub async fn collect_github_repo(crab: &LimitedCrab, repo_name: &str) -> Result<
 
     let commit = crab.get_latest_commit(repo_name).await?;
 
-    let files = git::fetch_repo(crab, repo_name, &commit)
+    let text_files = git::fetch_repo(crab, repo_name, &commit)
         .await
         .context("Fetching repo")?;
 
-    let files = tokio::task::block_in_place(move || {
+    let files = tokio::task::block_in_place(|| {
         let span = info_span!("parse_files").entered();
 
-        files
+        text_files
+            .clone()
             .into_par_iter()
             .filter_map(|f| File::parse(f, span.deref().clone()))
             .collect::<Vec<_>>()
     });
 
     let mut metrics = tokio::task::block_in_place(move || collect_file_metrics(&files))?;
+    let rca_metrics = tokio::task::block_in_place(|| collect_rust_code_analysis(&text_files))?;
+    metrics.extend(rca_metrics);
     metrics.extend(
         git::get_repo_metrics(crab, repo_name)
             .await
