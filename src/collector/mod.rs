@@ -189,8 +189,7 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
     load_files_span.exit();
 
     let rust_analysis_metrics = aggregate_rust_code_analysis(&raw_files)?;
-    let rust_analysis_metrics: BTreeMap<String, serde_json::Value> =
-        serde_json::from_value(rust_analysis_metrics)?;
+    let rust_analysis_metrics = BTreeMap::from([("rca".to_string(), rust_analysis_metrics)]);
     let mut metrics = collect_file_metrics(&files)?;
     metrics.extend(rust_analysis_metrics);
     let metrics = flatten_metrics(&metrics);
