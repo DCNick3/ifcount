@@ -203,8 +203,8 @@ pub fn aggregate_rust_code_analysis(files: &[File<String>]) -> Result<serde_json
         .map(|x| (&x.path, x.content.as_bytes().to_vec()))
         .collect();
 
-    let file_metrics = byte_sources
-        .into_iter()
+    let file_metrics: Vec<_> = byte_sources
+        .into_par_iter()
         .flat_map(|(path, contents)| {
             let parser = RustParser::new(contents.clone(), &path.to_path(""), None);
             ::rust_code_analysis::metrics(&parser, &path.to_path(""))
@@ -216,7 +216,8 @@ pub fn aggregate_rust_code_analysis(files: &[File<String>]) -> Result<serde_json
             space.spaces.clear();
             (path.to_string(), space)
         })
-        .map(|(_, space)| space.metrics);
+        .map(|(_, space)| space.metrics)
+        .collect();
 
     let mut statisics = RCAMetrics::default();
     for metrics_batch in file_metrics {
