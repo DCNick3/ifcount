@@ -200,14 +200,16 @@ pub fn collect_rust_code_analysis(
     files: &[File<String>],
 ) -> Result<BTreeMap<String, serde_json::Value>> {
     let byte_sources: Vec<_> = files
-        .into_iter()
+        .iter()
         .map(|x| (&x.path, x.content.as_bytes().to_vec()))
         .collect();
 
+    let rca_span = info_span!("rust_code_analysis").entered();
     let file_metrics: Vec<_> = byte_sources
         .into_par_iter()
         .flat_map(|(path, contents)| {
-            let parser = RustParser::new(contents.clone(), &path.to_path(""), None);
+            let _span = info_span!(parent: rca_span.id(), "collect_metric", path = %path).entered();
+            let parser = RustParser::new(contents, &path.to_path(""), None);
             ::rust_code_analysis::metrics(&parser, &path.to_path(""))
                 .context("Extracting rust_code_analysis metrics")
                 .map_err(|e| error!("{e}"))
