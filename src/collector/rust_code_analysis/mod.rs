@@ -42,11 +42,12 @@ impl Cognitive {
     fn observe(&mut self, stats: &cognitive::Stats) {
         let avg = stats.cognitive_average();
         if avg.is_finite() {
-            self.average.add(avg);
-            self.max.add(stats.cognitive_max());
-            self.min.add(stats.cognitive_min());
-            self.sum.add(stats.cognitive_sum());
+            return;
         }
+        self.average.add(avg);
+        self.max.add(stats.cognitive_max());
+        self.min.add(stats.cognitive_min());
+        self.sum.add(stats.cognitive_sum());
     }
 }
 
@@ -88,7 +89,7 @@ pub struct Halstead {
 
 impl Halstead {
     fn observe(&mut self, stats: &halstead::Stats) {
-        // most metrics don't work with 0 uprands or operators
+        // most metrics don't work with 0 u_operands or u_operators
         if stats.u_operands() == 0. || stats.u_operators() == 0. {
             return;
         }
@@ -220,12 +221,13 @@ pub struct Nexits {
 impl Nexits {
     fn observe(&mut self, stats: &exit::Stats) {
         let avg = stats.exit_average();
-        if avg.is_finite() {
-            self.average.add(stats.exit_average());
-            self.max.add(stats.exit_max());
-            self.min.add(stats.exit_min());
-            self.sum.add(stats.exit_sum());
+        if !avg.is_finite() {
+            return;
         }
+        self.average.add(avg);
+        self.max.add(stats.exit_max());
+        self.min.add(stats.exit_min());
+        self.sum.add(stats.exit_sum());
     }
 }
 
