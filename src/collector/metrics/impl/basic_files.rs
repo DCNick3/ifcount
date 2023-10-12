@@ -8,8 +8,9 @@ struct FileStats {
     structs_count: usize,
     enums_count: usize,
     impls_count: usize,
-    /// free-standing functions
-    all_fns_count: usize,
+    // duplicates one of the RCA metrics
+    // /// free-standing functions
+    // all_fns_count: usize,
     /// public free-standing functions
     pub_fns_count: usize,
 }
@@ -28,7 +29,7 @@ impl Visit<'_> for FileStats {
     }
 
     fn visit_item_fn(&mut self, i: &'_ syn::ItemFn) {
-        self.all_fns_count += 1;
+        // self.all_fns_count += 1;
         if matches!(i.vis, syn::Visibility::Public(_)) {
             self.pub_fns_count += 1;
         }
@@ -51,7 +52,7 @@ impl Visit<'_> for Files {
         self.struct_count.observe(file_stats.structs_count);
         self.enum_count.observe(file_stats.enums_count);
         self.impl_block_count.observe(file_stats.impls_count);
-        self.all_fn_count.observe(file_stats.all_fns_count);
+        // self.all_fn_count.observe(file_stats.all_fns_count);
         self.pub_fn_count.observe(file_stats.pub_fns_count);
     }
 }

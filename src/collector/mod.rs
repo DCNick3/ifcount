@@ -83,7 +83,14 @@ fn count_submetrics(value: &serde_json::Value) -> usize {
         }
         // null can be encountered in histogram's `mode` field
         Value::Null | Value::Number(_) => 1,
-        Value::Object(obj) => obj.values().map(count_submetrics).sum::<usize>(),
+        Value::Object(obj) => {
+            // detect histogram & count it as one metric
+            if obj.contains_key("avg") && obj.contains_key("mode") && obj.contains_key("sum") {
+                return 1;
+            }
+
+            obj.values().map(count_submetrics).sum::<usize>()
+        }
     }
 }
 
@@ -153,7 +160,10 @@ fn collect_file_metrics(files: &[FileAst]) -> Result<BTreeMap<String, serde_json
         .collect::<BTreeMap<_, _>>();
     collect_metrics_span.exit();
 
-    info!("Collected {} repo metrics!", count_metrics(&metrics));
+    info!(
+        "Collected {} file metrics (histograms are counted as one)!",
+        count_metrics(&metrics)
+    );
 
     Ok(metrics)
 }
@@ -228,6 +238,9 @@ pub fn collect_rust_code_analysis(
     }
 
     let metrics = serde_json::to_value(statisics)?;
+
+    info!("Collected {} RCA metrics!", count_submetrics(&metrics));
+
     Ok(BTreeMap::from([("rca".to_string(), metrics)]))
 }
 
@@ -260,9 +273,9 @@ pub async fn collect_github_repo(crab: &LimitedCrab, repo_name: &str) -> Result<
             .context("Getting repo metrics")?,
     );
 
+    info!("Collected {} total metrics", count_metrics(&metrics));
     let metrics = flatten_metrics(&metrics);
-
-    info!("Collected {} total metrics!", metrics.len());
+    info!("Flattened metrics have {} values", metrics.len());
 
     let meta = RepoMetadata {
         url: format!("git@github.com:{}.git", repo_name),
