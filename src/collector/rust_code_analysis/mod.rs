@@ -43,10 +43,10 @@ impl Cognitive {
         let avg = stats.cognitive_average();
         if avg.is_finite() {
             self.average.add(avg);
+            self.max.add(stats.cognitive_max());
+            self.min.add(stats.cognitive_min());
+            self.sum.add(stats.cognitive_sum());
         }
-        self.max.add(stats.cognitive_max());
-        self.min.add(stats.cognitive_min());
-        self.sum.add(stats.cognitive_sum());
     }
 }
 
@@ -171,7 +171,7 @@ impl MI {
         let original = stats.mi_original();
         let sei = stats.mi_sei();
         let visual_studio = stats.mi_visual_studio();
-        if original.is_nan() || sei.is_nan() || visual_studio.is_nan() {
+        if !original.is_finite() || !sei.is_finite() || !visual_studio.is_finite() {
             return;
         }
         self.mi_original.add(original);
@@ -219,10 +219,13 @@ pub struct Nexits {
 
 impl Nexits {
     fn observe(&mut self, stats: &exit::Stats) {
-        self.average.add(stats.exit_average());
-        self.max.add(stats.exit_max());
-        self.min.add(stats.exit_min());
-        self.sum.add(stats.exit_sum());
+        let avg = stats.exit_average();
+        if avg.is_finite() {
+            self.average.add(stats.exit_average());
+            self.max.add(stats.exit_max());
+            self.min.add(stats.exit_min());
+            self.sum.add(stats.exit_sum());
+        }
     }
 }
 
