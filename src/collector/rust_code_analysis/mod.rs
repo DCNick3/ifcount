@@ -40,7 +40,10 @@ pub struct Cognitive {
 
 impl Cognitive {
     fn observe(&mut self, stats: &cognitive::Stats) {
-        self.average.add(stats.cognitive_average());
+        let avg = stats.cognitive_average();
+        if avg.is_finite() {
+            self.average.add(avg);
+        }
         self.max.add(stats.cognitive_max());
         self.min.add(stats.cognitive_min());
         self.sum.add(stats.cognitive_sum());
@@ -85,6 +88,10 @@ pub struct Halstead {
 
 impl Halstead {
     fn observe(&mut self, stats: &halstead::Stats) {
+        // most metrics don't work with 0 uprands or operators
+        if stats.u_operands() == 0. || stats.u_operators() == 0. {
+            return;
+        }
         self.N1.add(stats.operators());
         self.N2.add(stats.operands());
         self.n1.add(stats.u_operators());
@@ -161,9 +168,15 @@ pub struct MI {
 
 impl MI {
     fn observe(&mut self, stats: &mi::Stats) {
-        self.mi_original.add(stats.mi_original());
-        self.mi_sei.add(stats.mi_sei());
-        self.mi_visual_studio.add(stats.mi_visual_studio());
+        let original = stats.mi_original();
+        let sei = stats.mi_sei();
+        let visual_studio = stats.mi_visual_studio();
+        if original.is_nan() || sei.is_nan() || visual_studio.is_nan() {
+            return;
+        }
+        self.mi_original.add(original);
+        self.mi_sei.add(sei);
+        self.mi_visual_studio.add(visual_studio);
     }
 }
 
