@@ -41,7 +41,7 @@ pub struct Cognitive {
 impl Cognitive {
     fn observe(&mut self, stats: &cognitive::Stats) {
         let avg = stats.cognitive_average();
-        if avg.is_finite() {
+        if !avg.is_finite() {
             return;
         }
         self.average.add(avg);
