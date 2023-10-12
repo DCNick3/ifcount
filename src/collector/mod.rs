@@ -196,6 +196,7 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
     Ok(RepoResult { meta, metrics })
 }
 
+#[instrument(skip(files))]
 pub fn collect_rust_code_analysis(
     files: &[File<String>],
 ) -> Result<BTreeMap<String, serde_json::Value>> {
