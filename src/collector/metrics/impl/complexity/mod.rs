@@ -8,9 +8,9 @@ use util::{Hist, Monoid};
 
 #[derive(Default, Clone, Serialize)]
 struct ComplexityStats {
-    item_fn: Hist<128>,
-    impl_item_fn: Hist<128>,
-    closure: Hist<128>,
+    item_fn: Hist,
+    impl_item_fn: Hist,
+    closure: Hist,
 }
 
 impl Monoid for ComplexityStats {

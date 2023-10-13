@@ -6,7 +6,7 @@ use util::{Hist, Monoid};
 #[derive(Default)]
 pub struct StatementSize {
     expr_count: usize,
-    hist: Hist<16>,
+    hist: Hist,
 }
 
 impl Visit<'_> for StatementSize {

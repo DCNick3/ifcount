@@ -38,11 +38,11 @@ impl Visit<'_> for FileStats {
 
 #[derive(Clone, Default, Serialize)]
 struct Files {
-    struct_count: Hist<64>,
-    enum_count: Hist<64>,
-    impl_block_count: Hist<64>,
-    all_fn_count: Hist<64>,
-    pub_fn_count: Hist<32>,
+    struct_count: Hist,
+    enum_count: Hist,
+    impl_block_count: Hist,
+    all_fn_count: Hist,
+    pub_fn_count: Hist,
 }
 
 impl Visit<'_> for Files {

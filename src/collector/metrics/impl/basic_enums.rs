@@ -3,9 +3,9 @@ use util::{Hist, Monoid};
 
 #[derive(Default, Serialize, Clone)]
 struct Enums {
-    variant_count: Hist<64>,
-    attr_count: Hist<64>,
-    variant_attr_count: Hist<64>,
+    variant_count: Hist,
+    attr_count: Hist,
+    variant_attr_count: Hist,
 }
 
 impl Monoid for Enums {

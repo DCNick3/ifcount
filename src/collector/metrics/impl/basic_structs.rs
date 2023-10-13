@@ -4,10 +4,10 @@ use util::{Hist, Monoid};
 
 #[derive(Default, Serialize, Clone)]
 struct Structs {
-    fields_count: Hist<64>,
-    public_fields_count: Hist<64>,
-    attrs_count: Hist<32>,
-    field_attr_count: Hist<32>,
+    fields_count: Hist,
+    public_fields_count: Hist,
+    attrs_count: Hist,
+    field_attr_count: Hist,
 }
 
 impl Monoid for Structs {

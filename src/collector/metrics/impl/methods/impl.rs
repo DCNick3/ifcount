@@ -11,7 +11,7 @@ use super::{
 
 /// lack of cohesion of methods per impl block
 #[derive(Default, Serialize)]
-struct ImplLcom4(Hist<8>);
+struct ImplLcom4(Hist);
 
 impl Visit<'_> for ImplLcom4 {
     fn visit_item_impl(&mut self, i: &'_ syn::ItemImpl) {

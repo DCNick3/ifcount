@@ -3,8 +3,8 @@ use util::{Hist, Monoid};
 
 #[derive(Default, Clone, Serialize)]
 struct MacroStats {
-    argument_size: Hist<16>,
-    count_per_file: Hist<16>,
+    argument_size: Hist,
+    count_per_file: Hist,
 }
 
 impl Monoid for MacroStats {

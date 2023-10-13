@@ -4,7 +4,7 @@ use super::prelude::*;
 use util::{Hist, Monoid};
 
 #[derive(Default)]
-pub struct FnArgsCount(Hist<16>);
+pub struct FnArgsCount(Hist);
 
 impl Visit<'_> for FnArgsCount {
     fn visit_signature(&mut self, i: &'_ syn::Signature) {

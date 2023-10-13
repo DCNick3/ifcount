@@ -4,11 +4,11 @@ use util::{Hist, Monoid};
 
 #[derive(Default, Clone, Serialize)]
 struct TraitDefinitions {
-    generic_param_count: Hist<16>,
-    supertrait_count: Hist<16>,
-    default_fn_count: Hist<128>,
-    all_fn_count: Hist<256>,
-    assoc_type_count: Hist<128>,
+    generic_param_count: Hist,
+    supertrait_count: Hist,
+    default_fn_count: Hist,
+    all_fn_count: Hist,
+    assoc_type_count: Hist,
 }
 
 impl Monoid for TraitDefinitions {

@@ -6,7 +6,7 @@ use syn::{Block, Expr, ExprClosure, ImplItemFn, ItemFn};
 struct VisitorAvgMethodDepth {
     current_depth: u32,
     max_depth: u32,
-    hist: Hist<64>,
+    hist: Hist,
 }
 
 impl VisitorAvgMethodDepth {
