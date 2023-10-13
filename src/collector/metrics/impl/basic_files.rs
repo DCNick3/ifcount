@@ -41,7 +41,7 @@ struct Files {
     struct_count: Hist,
     enum_count: Hist,
     impl_block_count: Hist,
-    all_fn_count: Hist,
+    // all_fn_count: Hist,
     pub_fn_count: Hist,
 }
 
@@ -67,7 +67,7 @@ impl Monoid for Files {
             struct_count: self.struct_count + rhs.struct_count,
             enum_count: self.enum_count + rhs.enum_count,
             impl_block_count: self.impl_block_count + rhs.impl_block_count,
-            all_fn_count: self.all_fn_count + rhs.all_fn_count,
+            // all_fn_count: self.all_fn_count + rhs.all_fn_count,
             pub_fn_count: self.pub_fn_count + rhs.pub_fn_count,
         }
     }
