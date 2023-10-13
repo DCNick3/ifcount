@@ -32,7 +32,7 @@ pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
         fn_depth::make_collector(),
         if_count::make_collector(),
         // this is duplicated in rust-code-analysis
-        // fn_arg_count::make_collector(),
+        fn_arg_count::make_collector(),
         basic_structs::make_collector(),
         basic_enums::make_collector(),
         basic_traits::make_collector(),
