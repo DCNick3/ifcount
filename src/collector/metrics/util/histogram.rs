@@ -82,7 +82,9 @@ impl Hist {
 
     pub fn into_values(self) -> Vec<usize> {
         let mut out = Vec::with_capacity(self.count() as usize);
-        for (val, count) in self.buckets.into_iter() {
+        let mut pairs = self.buckets.into_iter().collect::<Vec<_>>();
+        pairs.sort();
+        for (val, count) in pairs {
             for _ in 0..count {
                 out.push(val);
             }
@@ -114,5 +116,89 @@ impl std::ops::Add for Hist {
     fn add(mut self, rhs: Self) -> Self::Output {
         self += rhs;
         self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::collector::metrics::util::Monoid;
+
+    #[test]
+    fn test_hist() {
+        let mut hist = super::Hist::default();
+        hist.observe(1);
+
+        hist.observe(2);
+        hist.observe(2);
+
+        hist.observe(3);
+        hist.observe(3);
+        hist.observe(3);
+
+        hist.observe(4);
+        hist.observe(4);
+        hist.observe(4);
+        hist.observe(4);
+
+        hist.observe(5);
+        hist.observe(5);
+        hist.observe(5);
+        hist.observe(5);
+        hist.observe(5);
+
+        assert_eq!(hist.count(), 15);
+        assert_eq!(hist.sum(), 55);
+        assert_eq!(hist.average(), 55.0 / 15.0);
+        assert_eq!(hist.mode(), Some(5));
+        assert_eq!(
+            hist.into_values(),
+            vec![1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5]
+        );
+    }
+
+    #[test]
+    fn merge_hist() {
+        let mut hist1 = super::Hist::default();
+        hist1.observe(1);
+        hist1.observe(2);
+        hist1.observe(3);
+        hist1.observe(4);
+
+        let mut hist2 = super::Hist::default();
+        hist2.observe(1);
+        hist2.observe(5);
+        hist2.observe(6);
+        hist2.observe(1);
+
+        hist1 += hist2;
+
+        assert_eq!(hist1.count(), 8);
+        assert_eq!(hist1.sum(), 23);
+        assert_eq!(hist1.average(), 23.0 / 8.0);
+        assert_eq!(hist1.mode(), Some(1));
+        assert_eq!(hist1.into_values(), vec![1, 1, 1, 2, 3, 4, 5, 6]);
+    }
+
+    #[test]
+    fn monoid() {
+        let mut hist1 = super::Hist::init();
+        hist1.observe(1);
+        hist1.observe(2);
+        hist1.observe(3);
+        hist1.observe(4);
+
+        let mut hist2 = super::Hist::init();
+        hist2.observe(1);
+        hist2.observe(5);
+        hist2.observe(6);
+        hist2.observe(1);
+
+        let hist = super::Hist::unite(hist1, hist2);
+
+        assert_eq!(hist.count(), 8);
+        assert_eq!(hist.sum(), 23);
+        assert_eq!(hist.average(), 23.0 / 8.0);
+        assert_eq!(hist.mode(), Some(1));
+        assert_eq!(hist.into_values(), vec![1, 1, 1, 2, 3, 4, 5, 6]);
     }
 }
