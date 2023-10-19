@@ -73,3 +73,90 @@ pub fn make_collector() -> MetricCollectorBox {
     )
     .make_box()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::VisitorAvgMethodDepth;
+    use expect_test::{expect, Expect};
+    use syn::parse_quote;
+    use syn::visit::Visit;
+
+    fn check(code: syn::File, expect: Expect) {
+        let mut metric = VisitorAvgMethodDepth::default();
+        metric.visit_file(&code);
+        let metric = serde_json::to_string(&metric.hist.into_values()).unwrap();
+        expect.assert_eq(&metric)
+    }
+
+    #[test]
+    fn test_depth() {
+        check(
+            parse_quote! {
+                fn foo() {
+                    let x = 1;
+                    let y = 2;
+                    let z = 3;
+                }
+            },
+            expect![["[1]"]],
+        );
+        check(
+            parse_quote! {
+                fn foo() {
+                    {}
+                }
+            },
+            expect![["[2]"]],
+        );
+        check(
+            parse_quote! {
+                fn foo() {
+                    // closures are their own scope
+                    || {}
+                }
+            },
+            expect![["[1,1]"]],
+        );
+        check(
+            parse_quote! {
+                fn foo() {
+                    struct A;
+                    impl A {
+                        fn inner() {
+                            {}
+                        }
+                    }
+                }
+            },
+            expect![["[1,2]"]],
+        );
+        check(
+            parse_quote! {
+                fn foo() {
+                    if true {
+                        println!("hello");
+
+                        if true {
+                            while 10 < 19 {
+                                println!("hello");
+                            }
+
+                            loop {
+                                println!("hello");
+                                if false {
+                                    break;
+                                }
+                            }
+                        }
+
+                    } else {
+                        for i in 0..10 {
+                            println!("hello");
+                        }
+                    }
+                }
+            },
+            expect![["[5]"]],
+        );
+    }
+}

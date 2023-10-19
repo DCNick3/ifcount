@@ -85,9 +85,10 @@ pub fn make_collector() -> MetricCollectorBox {
 
 #[cfg(test)]
 mod tests {
-    use syn::{parse_quote, visit::Visit, File};
-
     use super::Files;
+    use crate::collector::metrics::util::check;
+    use expect_test::expect;
+    use syn::parse_quote;
 
     #[test]
     fn count_file() {
@@ -104,11 +105,39 @@ mod tests {
                 Variant1,
                 Variant2,
             }
+
+            impl Name {}
+            impl Name {}
+
+            pub fn pub_fn_1() {}
+            pub fn pub_fn_2() {}
+            pub fn pub_fn_3() {}
         };
-        let syntax_tree: File = syn::parse2(code).unwrap();
-        let mut files = Files::default();
-        files.visit_file(&syntax_tree);
-        assert_eq!(files.struct_count.sum(), 2);
-        assert_eq!(files.enum_count.sum(), 1)
+        check::<Files>(
+            code,
+            expect![[r#"
+            {
+              "struct_count": {
+                "sum": 2,
+                "avg": 2.0,
+                "mode": 2
+              },
+              "enum_count": {
+                "sum": 1,
+                "avg": 1.0,
+                "mode": 1
+              },
+              "impl_block_count": {
+                "sum": 2,
+                "avg": 2.0,
+                "mode": 2
+              },
+              "pub_fn_count": {
+                "sum": 3,
+                "avg": 3.0,
+                "mode": 3
+              }
+            }"#]],
+        );
     }
 }

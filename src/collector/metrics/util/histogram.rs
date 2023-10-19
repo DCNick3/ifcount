@@ -79,6 +79,16 @@ impl Hist {
             mode: self.mode(),
         }
     }
+
+    pub fn into_values(self) -> Vec<usize> {
+        let mut out = Vec::with_capacity(self.count() as usize);
+        for (val, count) in self.buckets.into_iter() {
+            for _ in 0..count {
+                out.push(val);
+            }
+        }
+        out
+    }
 }
 
 impl Default for Hist {

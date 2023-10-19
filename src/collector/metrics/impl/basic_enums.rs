@@ -45,7 +45,7 @@ pub fn make_collector() -> MetricCollectorBox {
 
 #[cfg(test)]
 mod tests {
-    use crate::collector::metrics::r#impl::basic_enums::Enums;
+    use super::Enums;
     use crate::collector::metrics::util::check;
     use expect_test::expect;
     use syn::parse_quote;

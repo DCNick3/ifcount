@@ -64,3 +64,266 @@ pub fn make_collector() -> MetricCollectorBox {
     )
     .make_box()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::TraitDefinitions;
+    use crate::collector::metrics::util::check;
+    use expect_test::expect;
+    use syn::parse_quote;
+
+    #[test]
+    fn no_traits() {
+        let code = parse_quote! {
+            struct Thing {
+                u: i32,
+            }
+        };
+        check::<TraitDefinitions>(
+            code,
+            expect![[r#"
+                {
+                  "generic_param_count": {
+                    "sum": 0,
+                    "avg": null,
+                    "mode": null
+                  },
+                  "supertrait_count": {
+                    "sum": 0,
+                    "avg": null,
+                    "mode": null
+                  },
+                  "default_fn_count": {
+                    "sum": 0,
+                    "avg": null,
+                    "mode": null
+                  },
+                  "all_fn_count": {
+                    "sum": 0,
+                    "avg": null,
+                    "mode": null
+                  },
+                  "assoc_type_count": {
+                    "sum": 0,
+                    "avg": null,
+                    "mode": null
+                  }
+                }"#]],
+        );
+    }
+
+    #[test]
+    fn one_trait() {
+        let code = parse_quote! {
+            trait Thing {
+                fn foo();
+            }
+        };
+        check::<TraitDefinitions>(
+            code,
+            expect![[r#"
+                {
+                  "generic_param_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "supertrait_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "default_fn_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "all_fn_count": {
+                    "sum": 1,
+                    "avg": 1.0,
+                    "mode": 1
+                  },
+                  "assoc_type_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  }
+                }"#]],
+        );
+    }
+
+    #[test]
+    fn one_trait_with_supertraits_and_default_fns() {
+        let code = parse_quote! {
+            trait Thing: Clone + Copy {
+                fn foo();
+                fn foo2() {
+
+                }
+                fn foo3() {
+
+                }
+            }
+        };
+        check::<TraitDefinitions>(
+            code,
+            expect![[r#"
+                {
+                  "generic_param_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "supertrait_count": {
+                    "sum": 2,
+                    "avg": 2.0,
+                    "mode": 2
+                  },
+                  "default_fn_count": {
+                    "sum": 2,
+                    "avg": 2.0,
+                    "mode": 2
+                  },
+                  "all_fn_count": {
+                    "sum": 3,
+                    "avg": 3.0,
+                    "mode": 3
+                  },
+                  "assoc_type_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  }
+                }"#]],
+        );
+    }
+
+    #[test]
+    fn one_trait_with_assoc_types() {
+        let code = parse_quote! {
+            trait Thing {
+                type A;
+                type B;
+            }
+        };
+        check::<TraitDefinitions>(
+            code,
+            expect![[r#"
+                {
+                  "generic_param_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "supertrait_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "default_fn_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "all_fn_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "assoc_type_count": {
+                    "sum": 2,
+                    "avg": 2.0,
+                    "mode": 2
+                  }
+                }"#]],
+        );
+    }
+
+    #[test]
+    fn two_traits_with_generic_parameters() {
+        let code = parse_quote! {
+            trait Thing<T> {
+                type A;
+                type B;
+            }
+            trait Thing2<T, U> {
+                type A;
+                type B;
+            }
+        };
+        check::<TraitDefinitions>(
+            code,
+            expect![[r#"
+                {
+                  "generic_param_count": {
+                    "sum": 3,
+                    "avg": 1.5,
+                    "mode": 2
+                  },
+                  "supertrait_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "default_fn_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "all_fn_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "assoc_type_count": {
+                    "sum": 4,
+                    "avg": 2.0,
+                    "mode": 2
+                  }
+                }"#]],
+        );
+    }
+
+    #[test]
+    fn one_trait_inside_function() {
+        let code = parse_quote! {
+            fn foo() {
+                trait Thing {
+                    type A;
+                    type B;
+                }
+            }
+        };
+        check::<TraitDefinitions>(
+            code,
+            expect![[r#"
+                {
+                  "generic_param_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "supertrait_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "default_fn_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "all_fn_count": {
+                    "sum": 0,
+                    "avg": 0.0,
+                    "mode": 0
+                  },
+                  "assoc_type_count": {
+                    "sum": 2,
+                    "avg": 2.0,
+                    "mode": 2
+                  }
+                }"#]],
+        );
+    }
+}
