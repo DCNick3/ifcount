@@ -54,6 +54,7 @@ ignore = "0.4.20"
 crowbook-text-processing = "1.1.1"
 rust-code-analysis = "0.0.25"
 average = "0.14.1"
+expect-test = "1.4.1"
 
 [workspace.metadata.release]
 shared-version = true

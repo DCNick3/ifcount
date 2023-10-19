@@ -6,3 +6,6 @@ pub use monoid::Monoid;
 
 mod histogram;
 pub use histogram::Hist;
+
+mod test;
+pub use test::check;
