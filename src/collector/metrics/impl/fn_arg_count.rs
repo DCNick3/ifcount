@@ -59,3 +59,27 @@ pub fn make_collector() -> MetricCollectorBox {
     )
     .make_box()
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use syn::parse_quote;
+//
+//     fn refs() {
+//         let code: File = parse_quote! {
+//                     fn a(
+//                         &mut arg: &mut Type, // 1
+//         //                ^ pattern
+//                         arg2: &mut Type2 // 2
+//                         ) {
+//                         todo!()
+//                     }
+//
+//                     impl T {
+//                         fn method(
+//                             &mut self, // 3
+//                             &mut other: &mut Self // 4
+//                             )
+//                     }
+//                 };
+//     }
+// }

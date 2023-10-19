@@ -118,7 +118,12 @@ mod tests {
                 }
             }
         };
-        check::<ImplLcom4>(code, expect![[r#"{"avg":1.0,"mode":1,"sum":1}"#]]);
+        check::<ImplLcom4>(code, expect![[r#"
+            {
+              "sum": 1,
+              "avg": 1.0,
+              "mode": 1
+            }"#]]);
     }
 
     #[test]
@@ -133,6 +138,11 @@ mod tests {
                 }
             }
         };
-        check::<ImplLcom4>(code, expect![[r#"{"avg":2.0,"mode":2,"sum":2}"#]]);
+        check::<ImplLcom4>(code, expect![[r#"
+            {
+              "sum": 2,
+              "avg": 2.0,
+              "mode": 2
+            }"#]]);
     }
 }

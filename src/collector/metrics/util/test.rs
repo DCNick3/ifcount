@@ -8,6 +8,6 @@ where
 {
     let mut metric = T::default();
     metric.visit_file(&syntax_tree);
-    let value = serde_json::to_value(metric).unwrap();
-    expect.assert_eq(&value.to_string());
+    let representation = serde_json::to_string_pretty(&metric).unwrap();
+    expect.assert_eq(&representation);
 }
