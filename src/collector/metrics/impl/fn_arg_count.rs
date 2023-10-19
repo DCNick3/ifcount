@@ -60,26 +60,40 @@ pub fn make_collector() -> MetricCollectorBox {
     .make_box()
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use syn::parse_quote;
-//
-//     fn refs() {
-//         let code: File = parse_quote! {
-//                     fn a(
-//                         &mut arg: &mut Type, // 1
-//         //                ^ pattern
-//                         arg2: &mut Type2 // 2
-//                         ) {
-//                         todo!()
-//                     }
-//
-//                     impl T {
-//                         fn method(
-//                             &mut self, // 3
-//                             &mut other: &mut Self // 4
-//                             )
-//                     }
-//                 };
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    use expect_test::expect;
+    use syn::parse_quote;
+
+    use crate::collector::metrics::util::check;
+
+    use super::FnArgsCount;
+
+    #[test]
+    fn refs() {
+        let code = parse_quote! {
+                    fn a(
+                        &mut arg: &mut Type, // 1
+        //                ^ pattern
+                        arg2: &mut Type2 // 2
+                        ) {
+                        todo!()
+                    }
+
+                    impl T {
+                        fn method(
+                            &mut self, // 3
+                            &mut other: &mut Self // 4
+                            ){}
+                    }
+                };
+        check::<FnArgsCount>(code, expect![[r#"
+            {
+              "mutable": {
+                "sum": 4,
+                "avg": 2.0,
+                "mode": 2
+              }
+            }"#]]);
+    }
+}
