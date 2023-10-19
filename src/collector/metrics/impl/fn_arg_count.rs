@@ -87,12 +87,36 @@ mod tests {
                             ){}
                     }
                 };
-        check::<FnArgsCount>(code, expect![[r#"
+        check::<FnArgsCount>(
+            code,
+            expect![[r#"
             {
               "mutable": {
                 "sum": 4,
                 "avg": 2.0,
                 "mode": 2
+              }
+            }"#]],
+        );
+    }
+
+    #[test]
+    fn by_move() {
+        let code = parse_quote! {
+            fn free(mut val: Type){} // 0
+
+            impl T {
+                fn method(mut self, other: &mut Type2){ // 1
+                    todo!()
+                }
+            }
+        };
+        check::<FnArgsCount>(code, expect![[r#"
+            {
+              "mutable": {
+                "sum": 1,
+                "avg": 0.5,
+                "mode": 1
               }
             }"#]]);
     }
