@@ -98,7 +98,10 @@ fn walk(
 
 #[cfg(test)]
 mod tests {
-    use syn::{parse_quote, visit::Visit, File};
+    use expect_test::expect;
+    use syn::parse_quote;
+
+    use crate::collector::metrics::util::check;
 
     use super::ImplLcom4;
 
@@ -115,11 +118,7 @@ mod tests {
                 }
             }
         };
-        let syntax_tree: File = syn::parse2(code).unwrap();
-        let mut lcom4 = ImplLcom4::default();
-        lcom4.visit_file(&syntax_tree);
-        dbg!(lcom4.0.sum());
-        assert_eq!(lcom4.0.sum(), 1);
+        check::<ImplLcom4>(code, expect![[r#"{"avg":1.0,"mode":1,"sum":1}"#]]);
     }
 
     #[test]
@@ -134,9 +133,6 @@ mod tests {
                 }
             }
         };
-        let syntax_tree: File = syn::parse2(code).unwrap();
-        let mut lcom4 = ImplLcom4::default();
-        lcom4.visit_file(&syntax_tree);
-        assert_eq!(lcom4.0.sum(), 2);
+        check::<ImplLcom4>(code, expect![[r#"{"avg":2.0,"mode":2,"sum":2}"#]]);
     }
 }
