@@ -71,6 +71,10 @@ members = [
 ]
 
 # The profile that 'cargo dist' will build with
+[profile.cov]
+inherits = "dev"
+
+# The profile that 'cargo dist' will build with
 [profile.dist]
 inherits = "release"
 lto = "thin"
