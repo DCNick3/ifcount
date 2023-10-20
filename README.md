@@ -1,3 +1,5 @@
+![test suite](https://github.com/DCNick3/ifcount/actions/workflows/test.yml/badge.svg?event=push)
+
 ![](media/ifcount.gif)
 
 A _long awaited_ solution for a _widely encountered_ problem!
