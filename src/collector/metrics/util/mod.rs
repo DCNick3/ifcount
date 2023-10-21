@@ -9,3 +9,6 @@ pub use histogram::Hist;
 
 mod test;
 pub use test::check;
+
+mod unaggregated;
+pub use unaggregated::Unaggregated;
