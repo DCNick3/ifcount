@@ -1,5 +1,5 @@
 use super::prelude::{
-    util::{Hist, Monoid},
+    util::{Monoid, Unaggregated},
     *,
 };
 
@@ -38,11 +38,11 @@ impl Visit<'_> for FileStats {
 
 #[derive(Clone, Default, Serialize)]
 struct Files {
-    struct_count: Hist,
-    enum_count: Hist,
-    impl_block_count: Hist,
+    struct_count: Unaggregated,
+    enum_count: Unaggregated,
+    impl_block_count: Unaggregated,
     // all_fn_count: Hist,
-    pub_fn_count: Hist,
+    pub_fn_count: Unaggregated,
 }
 
 impl Visit<'_> for Files {

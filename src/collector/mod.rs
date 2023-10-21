@@ -78,11 +78,11 @@ fn count_submetrics(value: &serde_json::Value) -> usize {
     use serde_json::Value;
 
     match value {
-        Value::Bool(_) | Value::String(_) | Value::Array(_) => {
+        Value::Bool(_) | Value::String(_) => {
             panic!("Unknown type encountered in metrics: {}", value)
         }
         // null can be encountered in histogram's `mode` field
-        Value::Null | Value::Number(_) => 1,
+        Value::Null | Value::Number(_) | Value::Array(_) => 1,
         Value::Object(obj) => {
             // detect histogram & count it as one metric
             if obj.contains_key("avg") && obj.contains_key("mode") && obj.contains_key("sum") {
@@ -106,10 +106,10 @@ fn flatten_submetrics(
     use serde_json::Value;
 
     match value {
-        Value::Bool(_) | Value::String(_) | Value::Array(_) => {
+        Value::Bool(_) | Value::String(_) => {
             panic!("Unknown type encountered in metrics: {}", value)
         }
-        Value::Null | Value::Number(_) => {
+        Value::Null | Value::Number(_) | Value::Array(_) => {
             result.insert(pre_path.clone(), value.clone());
         }
         Value::Object(obj) => {

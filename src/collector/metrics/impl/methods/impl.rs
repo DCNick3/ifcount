@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use syn::{ImplItem, ImplItemFn};
 
-use crate::collector::metrics::util::{Hist, Monoid};
+use crate::collector::metrics::util::{Monoid, Unaggregated};
 
 use super::{
     prelude::*,
@@ -11,7 +11,7 @@ use super::{
 
 /// lack of cohesion of methods per impl block
 #[derive(Default, Serialize)]
-struct ImplLcom4(Hist);
+struct ImplLcom4(Unaggregated);
 
 impl Visit<'_> for ImplLcom4 {
     fn visit_item_impl(&mut self, i: &'_ syn::ItemImpl) {
@@ -118,12 +118,15 @@ mod tests {
                 }
             }
         };
-        check::<ImplLcom4>(code, expect![[r#"
+        check::<ImplLcom4>(
+            code,
+            expect![[r#"
             {
               "sum": 1,
               "avg": 1.0,
               "mode": 1
-            }"#]]);
+            }"#]],
+        );
     }
 
     #[test]
@@ -138,11 +141,14 @@ mod tests {
                 }
             }
         };
-        check::<ImplLcom4>(code, expect![[r#"
+        check::<ImplLcom4>(
+            code,
+            expect![[r#"
             {
               "sum": 2,
               "avg": 2.0,
               "mode": 2
-            }"#]]);
+            }"#]],
+        );
     }
 }

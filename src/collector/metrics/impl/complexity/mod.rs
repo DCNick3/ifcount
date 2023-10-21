@@ -4,13 +4,13 @@ mod r#impl;
 
 use super::prelude::*;
 use syn::{visit, ExprClosure, ImplItemFn, ItemFn};
-use util::{Hist, Monoid};
+use util::{Monoid, Unaggregated};
 
 #[derive(Default, Clone, Serialize)]
 struct ComplexityStats {
-    item_fn: Hist,
-    impl_item_fn: Hist,
-    closure: Hist,
+    item_fn: Unaggregated,
+    impl_item_fn: Unaggregated,
+    closure: Unaggregated,
 }
 
 impl Monoid for ComplexityStats {

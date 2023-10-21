@@ -1,14 +1,14 @@
 use super::prelude::*;
 use syn::TraitItem;
-use util::{Hist, Monoid};
+use util::{Monoid, Unaggregated};
 
 #[derive(Default, Clone, Serialize)]
 struct TraitDefinitions {
-    generic_param_count: Hist,
-    supertrait_count: Hist,
-    default_fn_count: Hist,
-    all_fn_count: Hist,
-    assoc_type_count: Hist,
+    generic_param_count: Unaggregated,
+    supertrait_count: Unaggregated,
+    default_fn_count: Unaggregated,
+    all_fn_count: Unaggregated,
+    assoc_type_count: Unaggregated,
 }
 
 impl Monoid for TraitDefinitions {

@@ -1,12 +1,12 @@
 use syn::visit::{self, Visit};
 
 use super::prelude::*;
-use util::{Hist, Monoid};
+use util::{Monoid, Unaggregated};
 
 #[derive(Default)]
 pub struct StatementSize {
     expr_count: usize,
-    hist: Hist,
+    hist: Unaggregated,
 }
 
 impl Visit<'_> for StatementSize {
@@ -64,12 +64,15 @@ mod tests {
             }
         };
         dbg!(&code);
-        check(code, expect![[r#"
+        check(
+            code,
+            expect![[r#"
             {
               "sum": 7,
               "avg": 7.0,
               "mode": 7
-            }"#]]);
+            }"#]],
+        );
     }
 
     #[test]
@@ -87,11 +90,14 @@ mod tests {
             }
         };
         dbg!(&code);
-        check(code, expect![[r#"
+        check(
+            code,
+            expect![[r#"
             {
               "sum": 4,
               "avg": 2.0,
               "mode": 3
-            }"#]])
+            }"#]],
+        )
     }
 }

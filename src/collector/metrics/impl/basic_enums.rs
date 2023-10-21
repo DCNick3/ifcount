@@ -1,11 +1,11 @@
 use super::prelude::*;
-use util::{Hist, Monoid};
+use util::{Monoid, Unaggregated};
 
 #[derive(Default, Serialize, Clone)]
 struct Enums {
-    variant_count: Hist,
-    attr_count: Hist,
-    variant_attr_count: Hist,
+    variant_count: Unaggregated,
+    attr_count: Unaggregated,
+    variant_attr_count: Unaggregated,
 }
 
 impl Monoid for Enums {

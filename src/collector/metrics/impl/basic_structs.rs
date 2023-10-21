@@ -1,13 +1,13 @@
 use super::prelude::*;
 use syn::Visibility;
-use util::{Hist, Monoid};
+use util::{Monoid, Unaggregated};
 
 #[derive(Default, Serialize, Clone)]
 struct Structs {
-    fields_count: Hist,
-    public_fields_count: Hist,
-    attrs_count: Hist,
-    field_attr_count: Hist,
+    fields_count: Unaggregated,
+    public_fields_count: Unaggregated,
+    attrs_count: Unaggregated,
+    field_attr_count: Unaggregated,
 }
 
 impl Monoid for Structs {
