@@ -4,11 +4,11 @@ use syn::{
 };
 
 use super::prelude::*;
-use util::{Hist, Monoid};
+use util::{Monoid, Unaggregated};
 
 #[derive(Default, Clone, Serialize)]
 pub struct FnArgsCount {
-    mutable: Hist,
+    mutable: Unaggregated,
 }
 
 impl Monoid for FnArgsCount {
@@ -111,13 +111,16 @@ mod tests {
                 }
             }
         };
-        check::<FnArgsCount>(code, expect![[r#"
+        check::<FnArgsCount>(
+            code,
+            expect![[r#"
             {
               "mutable": {
                 "sum": 1,
                 "avg": 0.5,
                 "mode": 1
               }
-            }"#]]);
+            }"#]],
+        );
     }
 }
