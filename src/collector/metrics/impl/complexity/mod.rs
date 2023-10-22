@@ -4,29 +4,34 @@ mod r#impl;
 
 use super::prelude::*;
 use syn::{visit, ExprClosure, ImplItemFn, ItemFn};
-use util::{Monoid, Unaggregated};
+use util::Monoid;
+use util::Observer;
 
 #[derive(Default, Clone, Serialize)]
-struct ComplexityStats {
-    item_fn: Unaggregated,
-    impl_item_fn: Unaggregated,
-    closure: Unaggregated,
+struct ComplexityStats<Obs> {
+    item_fn: Obs,
+    impl_item_fn: Obs,
+    closure: Obs,
 }
 
-impl Monoid for ComplexityStats {
+impl<T: Monoid> Monoid for ComplexityStats<T> {
     fn init() -> Self {
-        Self::default()
+        Self {
+            item_fn: Monoid::init(),
+            impl_item_fn: Monoid::init(),
+            closure: Monoid::init(),
+        }
     }
     fn unite(self, rhs: Self) -> Self {
         Self {
-            item_fn: self.item_fn + rhs.item_fn,
-            impl_item_fn: self.impl_item_fn + rhs.impl_item_fn,
-            closure: self.closure + rhs.closure,
+            item_fn: self.item_fn.unite(rhs.item_fn),
+            impl_item_fn: self.impl_item_fn.unite(rhs.impl_item_fn),
+            closure: self.closure.unite(rhs.closure),
         }
     }
 }
 
-impl Visit<'_> for ComplexityStats {
+impl<Obs: Observer> Visit<'_> for ComplexityStats<Obs> {
     fn visit_expr_closure(&mut self, i: &'_ ExprClosure) {
         self.closure
             .observe(r#impl::eval_expr(&i.body, Default::default()).0 as usize);
@@ -46,12 +51,13 @@ impl Visit<'_> for ComplexityStats {
     }
 }
 
-pub fn make_collector() -> MetricCollectorBox {
+pub fn make_collector<Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync>(
+) -> MetricCollectorBox {
     util::VisitorCollector::new(
         "complexity",
-        ComplexityStats::default(),
+        ComplexityStats::<Obs>::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),
     )
-    .make_box()
+    .make_box::<Obs>()
 }

@@ -1,28 +1,28 @@
-use super::prelude::*;
+use super::prelude::{util::Observer, *};
 use util::{Monoid, Unaggregated};
 
 #[derive(Default, Serialize, Clone)]
-struct Enums {
-    variant_count: Unaggregated,
-    attr_count: Unaggregated,
-    variant_attr_count: Unaggregated,
+struct Enums<Obs = Unaggregated> {
+    variant_count: Obs,
+    attr_count: Obs,
+    variant_attr_count: Obs,
 }
 
-impl Monoid for Enums {
+impl<T: Monoid + Default> Monoid for Enums<T> {
     fn init() -> Self {
         Self::default()
     }
 
     fn unite(self, rhs: Self) -> Self {
         Self {
-            variant_count: self.variant_count + rhs.variant_count,
-            attr_count: self.attr_count + rhs.attr_count,
-            variant_attr_count: self.variant_attr_count + rhs.variant_attr_count,
+            variant_count: self.variant_count.unite(rhs.variant_count),
+            attr_count: self.attr_count.unite(rhs.attr_count),
+            variant_attr_count: self.variant_attr_count.unite(rhs.variant_attr_count),
         }
     }
 }
 
-impl Visit<'_> for Enums {
+impl<Obs: Observer> Visit<'_> for Enums<Obs> {
     fn visit_item_enum(&mut self, i: &'_ syn::ItemEnum) {
         self.variant_count.observe(i.variants.len());
         self.attr_count.observe(i.attrs.len());
@@ -33,14 +33,15 @@ impl Visit<'_> for Enums {
     }
 }
 
-pub fn make_collector() -> MetricCollectorBox {
+pub fn make_collector<Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync>(
+) -> MetricCollectorBox {
     util::VisitorCollector::new(
         "enums",
-        Enums::default(),
+        Enums::<Obs>::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),
     )
-    .make_box()
+    .make_box::<Obs>()
 }
 
 #[cfg(test)]
