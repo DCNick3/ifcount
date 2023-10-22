@@ -32,7 +32,7 @@ pub trait MetricCollector: Sized + Send + Sync + 'static {
 
     fn aggregate_metrics(&self, metric: &[Self::Metric]) -> Self::AggregatedMetric;
 
-    fn make_box<Obs>(self) -> MetricCollectorBox {
+    fn make_box(self) -> MetricCollectorBox {
         MetricCollectorBox(Box::new(self))
     }
 }

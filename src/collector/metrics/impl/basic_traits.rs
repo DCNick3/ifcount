@@ -1,32 +1,32 @@
-use super::prelude::*;
+use super::prelude::{util::Observer, *};
 use syn::TraitItem;
 use util::{Monoid, Unaggregated};
 
 #[derive(Default, Clone, Serialize)]
-struct TraitDefinitions {
-    generic_param_count: Unaggregated,
-    supertrait_count: Unaggregated,
-    default_fn_count: Unaggregated,
-    all_fn_count: Unaggregated,
-    assoc_type_count: Unaggregated,
+struct TraitDefinitions<Obs = Unaggregated> {
+    generic_param_count: Obs,
+    supertrait_count: Obs,
+    default_fn_count: Obs,
+    all_fn_count: Obs,
+    assoc_type_count: Obs,
 }
 
-impl Monoid for TraitDefinitions {
+impl<T: Monoid + Default> Monoid for TraitDefinitions<T> {
     fn init() -> Self {
         Self::default()
     }
     fn unite(self, rhs: Self) -> Self {
         Self {
-            generic_param_count: self.generic_param_count + rhs.generic_param_count,
-            supertrait_count: self.supertrait_count + rhs.supertrait_count,
-            default_fn_count: self.default_fn_count + rhs.default_fn_count,
-            all_fn_count: self.all_fn_count + rhs.all_fn_count,
-            assoc_type_count: self.assoc_type_count + rhs.assoc_type_count,
+            generic_param_count: self.generic_param_count.unite(rhs.generic_param_count),
+            supertrait_count: self.supertrait_count.unite(rhs.supertrait_count),
+            default_fn_count: self.default_fn_count.unite(rhs.default_fn_count),
+            all_fn_count: self.all_fn_count.unite(rhs.all_fn_count),
+            assoc_type_count: self.assoc_type_count.unite(rhs.assoc_type_count),
         }
     }
 }
 
-impl Visit<'_> for TraitDefinitions {
+impl<Obs: Observer> Visit<'_> for TraitDefinitions<Obs> {
     fn visit_item_trait(&mut self, i: &'_ syn::ItemTrait) {
         self.generic_param_count.observe(i.generics.params.len());
         self.supertrait_count.observe(i.supertraits.len());
@@ -55,10 +55,12 @@ impl Visit<'_> for TraitDefinitions {
     }
 }
 
-pub fn make_collector() -> MetricCollectorBox {
+pub fn make_collector<
+    Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync + 'static,
+>() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "trait_def",
-        TraitDefinitions::default(),
+        TraitDefinitions::<Obs>::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),
     )

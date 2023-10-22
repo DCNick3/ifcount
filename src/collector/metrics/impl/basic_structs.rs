@@ -1,31 +1,31 @@
-use super::prelude::*;
+use super::prelude::{util::Observer, *};
 use syn::Visibility;
 use util::{Monoid, Unaggregated};
 
 #[derive(Default, Serialize, Clone)]
-struct Structs {
-    fields_count: Unaggregated,
-    public_fields_count: Unaggregated,
-    attrs_count: Unaggregated,
-    field_attr_count: Unaggregated,
+struct Structs<Obs = Unaggregated> {
+    fields_count: Obs,
+    public_fields_count: Obs,
+    attrs_count: Obs,
+    field_attr_count: Obs,
 }
 
-impl Monoid for Structs {
+impl<T: Monoid + Default> Monoid for Structs<T> {
     fn init() -> Self {
         Self::default()
     }
 
     fn unite(self, rhs: Self) -> Self {
         Self {
-            fields_count: self.fields_count + rhs.fields_count,
-            public_fields_count: self.public_fields_count + rhs.public_fields_count,
-            attrs_count: self.attrs_count + rhs.attrs_count,
-            field_attr_count: self.field_attr_count + rhs.field_attr_count,
+            fields_count: self.fields_count.unite(rhs.fields_count),
+            public_fields_count: self.public_fields_count.unite(rhs.public_fields_count),
+            attrs_count: self.attrs_count.unite(rhs.attrs_count),
+            field_attr_count: self.field_attr_count.unite(rhs.field_attr_count),
         }
     }
 }
 
-impl Visit<'_> for Structs {
+impl<Obs: Observer> Visit<'_> for Structs<Obs> {
     fn visit_item_struct(&mut self, i: &'_ syn::ItemStruct) {
         self.fields_count.observe(i.fields.len());
         self.public_fields_count.observe(
@@ -42,10 +42,12 @@ impl Visit<'_> for Structs {
     }
 }
 
-pub fn make_collector() -> MetricCollectorBox {
+pub fn make_collector<
+    Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync + 'static,
+>() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "structs",
-        Structs::default(),
+        Structs::<Obs>::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),
     )
