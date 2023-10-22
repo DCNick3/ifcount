@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use super::Monoid;
+use super::{super::Monoid, Observer};
 
 #[derive(Default, Clone)]
 pub struct Unaggregated {
@@ -39,8 +39,8 @@ impl Monoid for Unaggregated {
     }
 }
 
-impl Unaggregated {
-    pub fn observe(&mut self, val: usize) {
-        self.observations.push(val);
+impl Observer for Unaggregated {
+    fn observe(&mut self, value: usize) {
+        self.observations.push(value);
     }
 }

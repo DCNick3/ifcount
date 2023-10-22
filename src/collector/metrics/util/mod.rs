@@ -4,11 +4,10 @@ pub use visitor_collector::VisitorCollector;
 mod monoid;
 pub use monoid::Monoid;
 
-mod histogram;
-pub use histogram::Hist;
-
 mod test;
 pub use test::check;
 
-mod unaggregated;
-pub use unaggregated::Unaggregated;
+mod observer;
+pub use observer::Hist;
+pub use observer::Observer;
+pub use observer::Unaggregated;

@@ -32,7 +32,7 @@ pub trait MetricCollector: Sized + Send + Sync + 'static {
 
     fn aggregate_metrics(&self, metric: &[Self::Metric]) -> Self::AggregatedMetric;
 
-    fn make_box(self) -> MetricCollectorBox {
+    fn make_box<Obs>(self) -> MetricCollectorBox {
         MetricCollectorBox(Box::new(self))
     }
 }
@@ -69,3 +69,5 @@ impl<M: Serialize, C: MetricCollector<AggregatedMetric = M>> MetricCollectorBoxe
 
 use crate::collector::FileAst;
 pub use r#impl::get_metric_collectors;
+
+use self::util::Observer;
