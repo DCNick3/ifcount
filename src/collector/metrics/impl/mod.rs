@@ -1,4 +1,4 @@
-use prelude::util::Unaggregated;
+use prelude::util::{Hist, Unaggregated};
 
 use super::MetricCollectorBox;
 
@@ -33,14 +33,14 @@ pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
     collectors![
         fn_depth::make_collector(),
         if_count::make_collector(),
-        fn_arg_count::make_collector(),
-        basic_structs::make_collector(),
+        fn_arg_count::make_collector::<Unaggregated>(),
+        basic_structs::make_collector::<Unaggregated>(),
         basic_enums::make_collector::<Unaggregated>(),
-        basic_traits::make_collector(),
+        basic_traits::make_collector::<Unaggregated>(),
         complexity::make_collector::<Unaggregated>(),
-        stmt_size::make_collector(),
-        basic_files::make_collector(),
-        methods::make_collector(),
+        stmt_size::make_collector::<Unaggregated>(),
+        basic_files::make_collector::<Unaggregated>(),
+        methods::make_collector::<Unaggregated>(),
         macros::make_collector(),
     ]
 }

@@ -1,15 +1,15 @@
 use syn::visit::{self, Visit};
 
-use super::prelude::*;
+use super::prelude::{util::Observer, *};
 use util::{Monoid, Unaggregated};
 
 #[derive(Default)]
-pub struct StatementSize {
+pub struct StatementSize<Obs = Unaggregated> {
     expr_count: usize,
-    hist: Unaggregated,
+    hist: Obs,
 }
 
-impl Visit<'_> for StatementSize {
+impl<Obs: Observer> Visit<'_> for StatementSize<Obs> {
     fn visit_expr(&mut self, i: &'_ syn::Expr) {
         self.expr_count += 1;
 
@@ -27,12 +27,14 @@ impl Visit<'_> for StatementSize {
     }
 }
 
-pub fn make_collector() -> MetricCollectorBox {
+pub fn make_collector<
+    Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync + 'static,
+>() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "statement_size",
-        StatementSize::default(),
+        StatementSize::<Obs>::default(),
         |v| v,
-        |v: &[StatementSize]| Monoid::reduce(v.iter().map(|v| v.hist.to_owned())),
+        |v: &[StatementSize<Obs>]| Monoid::reduce(v.iter().map(|v| v.hist.to_owned())),
     )
     .make_box()
 }
@@ -42,10 +44,12 @@ mod tests {
     use expect_test::{expect, Expect};
     use syn::{parse_quote, visit::Visit, File};
 
+    use crate::collector::metrics::util::Unaggregated;
+
     use super::StatementSize;
 
     fn check(code: File, expect: Expect) {
-        let mut statements = StatementSize::default();
+        let mut statements = StatementSize::<Unaggregated>::default();
         statements.visit_file(&code);
         let actual = serde_json::to_string_pretty(&statements.hist).unwrap();
         expect.assert_eq(&actual);

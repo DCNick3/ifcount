@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use syn::{ImplItem, ImplItemFn};
 
-use crate::collector::metrics::util::{Monoid, Unaggregated};
+use crate::collector::metrics::util::{Monoid, Observer, Unaggregated};
 
 use super::{
     prelude::*,
@@ -11,9 +11,9 @@ use super::{
 
 /// lack of cohesion of methods per impl block
 #[derive(Default, Serialize)]
-struct ImplLcom4(Unaggregated);
+struct ImplLcom4<Obs = Unaggregated>(Obs);
 
-impl Visit<'_> for ImplLcom4 {
+impl<Obs: Observer> Visit<'_> for ImplLcom4<Obs> {
     fn visit_item_impl(&mut self, i: &'_ syn::ItemImpl) {
         let mut fields = FnFieldSet::default();
         let mut calls = FnMethodCalls::default();
@@ -54,10 +54,12 @@ impl Visit<'_> for ImplLcom4 {
     }
 }
 
-pub fn make_collector() -> MetricCollectorBox {
+pub fn make_collector<
+    Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync + 'static,
+>() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "lcom4_per_impl_block",
-        ImplLcom4::default(),
+        ImplLcom4::<Obs>::default(),
         |v| v.0,
         |v| Monoid::reduce(v.iter().cloned()),
     )

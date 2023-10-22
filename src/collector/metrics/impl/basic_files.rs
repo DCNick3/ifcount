@@ -1,5 +1,5 @@
 use super::prelude::{
-    util::{Monoid, Unaggregated},
+    util::{Monoid, Observer, Unaggregated},
     *,
 };
 
@@ -37,15 +37,15 @@ impl Visit<'_> for FileStats {
 }
 
 #[derive(Clone, Default, Serialize)]
-struct Files {
-    struct_count: Unaggregated,
-    enum_count: Unaggregated,
-    impl_block_count: Unaggregated,
+struct Files<Obs = Unaggregated> {
+    struct_count: Obs,
+    enum_count: Obs,
+    impl_block_count: Obs,
     // all_fn_count: Hist,
-    pub_fn_count: Unaggregated,
+    pub_fn_count: Obs,
 }
 
-impl Visit<'_> for Files {
+impl<Obs: Observer> Visit<'_> for Files<Obs> {
     fn visit_file(&mut self, i: &'_ syn::File) {
         let mut file_stats = FileStats::default();
         syn::visit::visit_file(&mut file_stats, i);
@@ -57,26 +57,28 @@ impl Visit<'_> for Files {
     }
 }
 
-impl Monoid for Files {
+impl<T: Monoid + Default> Monoid for Files<T> {
     fn init() -> Self {
         Self::default()
     }
 
     fn unite(self, rhs: Self) -> Self {
         Self {
-            struct_count: self.struct_count + rhs.struct_count,
-            enum_count: self.enum_count + rhs.enum_count,
-            impl_block_count: self.impl_block_count + rhs.impl_block_count,
+            struct_count: self.struct_count.unite(rhs.struct_count),
+            enum_count: self.enum_count.unite(rhs.enum_count),
+            impl_block_count: self.impl_block_count.unite(rhs.impl_block_count),
             // all_fn_count: self.all_fn_count + rhs.all_fn_count,
-            pub_fn_count: self.pub_fn_count + rhs.pub_fn_count,
+            pub_fn_count: self.pub_fn_count.unite(rhs.pub_fn_count),
         }
     }
 }
 
-pub fn make_collector() -> MetricCollectorBox {
+pub fn make_collector<
+    Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync + 'static,
+>() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "per_file",
-        Files::default(),
+        Files::<Obs>::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),
     )

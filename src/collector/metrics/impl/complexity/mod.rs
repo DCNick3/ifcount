@@ -51,13 +51,14 @@ impl<Obs: Observer> Visit<'_> for ComplexityStats<Obs> {
     }
 }
 
-pub fn make_collector<Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync>(
-) -> MetricCollectorBox {
+pub fn make_collector<
+    Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync + 'static,
+>() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "complexity",
         ComplexityStats::<Obs>::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),
     )
-    .make_box::<Obs>()
+    .make_box()
 }

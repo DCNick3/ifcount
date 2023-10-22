@@ -33,15 +33,16 @@ impl<Obs: Observer> Visit<'_> for Enums<Obs> {
     }
 }
 
-pub fn make_collector<Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync>(
-) -> MetricCollectorBox {
+pub fn make_collector<
+    Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync + 'static,
+>() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "enums",
         Enums::<Obs>::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),
     )
-    .make_box::<Obs>()
+    .make_box()
 }
 
 #[cfg(test)]

@@ -3,15 +3,15 @@ use syn::{
     FnArg, PatType, Type,
 };
 
-use super::prelude::*;
+use super::prelude::{util::Observer, *};
 use util::{Monoid, Unaggregated};
 
 #[derive(Default, Clone, Serialize)]
-pub struct FnArgsCount {
-    mutable: Unaggregated,
+pub struct FnArgsCount<Obs = Unaggregated> {
+    mutable: Obs,
 }
 
-impl Monoid for FnArgsCount {
+impl<T: Monoid + Default> Monoid for FnArgsCount<T> {
     fn init() -> Self {
         Self::default()
     }
@@ -23,7 +23,7 @@ impl Monoid for FnArgsCount {
     }
 }
 
-impl Visit<'_> for FnArgsCount {
+impl<Obs: Observer> Visit<'_> for FnArgsCount<Obs> {
     fn visit_signature(&mut self, i: &'_ syn::Signature) {
         let mutable = i
             .inputs
@@ -50,12 +50,14 @@ impl Visit<'_> for FnArgsCount {
     }
 }
 
-pub fn make_collector() -> MetricCollectorBox {
+pub fn make_collector<
+    Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync + 'static,
+>() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "fn_arg_count",
-        FnArgsCount::default(),
+        FnArgsCount::<Obs>::default(),
         |v| v,
-        |v: &[FnArgsCount]| Monoid::reduce(v.into_iter().map(|args| args.to_owned())),
+        |v: &[FnArgsCount<Obs>]| Monoid::reduce(v.into_iter().map(|args| args.to_owned())),
     )
     .make_box()
 }
