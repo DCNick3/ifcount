@@ -2,7 +2,7 @@ use rustc_hash::FxHashMap;
 
 use serde::Serialize;
 
-use super::Monoid;
+use super::{super::Monoid, Observer};
 
 /// N is the number of buckets exluding inf
 /// buckets for values 0, 1, 2, .. N-1 are created
@@ -36,6 +36,12 @@ impl Monoid for Hist {
 
     fn unite(self, rhs: Self) -> Self {
         self + rhs
+    }
+}
+
+impl Observer for Hist {
+    fn observe(&mut self, value: usize) {
+        self.observe(value);
     }
 }
 
