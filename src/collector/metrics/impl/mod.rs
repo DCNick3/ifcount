@@ -1,3 +1,5 @@
+use prelude::util::Unaggregated;
+
 use super::MetricCollectorBox;
 
 mod prelude {
@@ -31,12 +33,11 @@ pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
     collectors![
         fn_depth::make_collector(),
         if_count::make_collector(),
-        // this is duplicated in rust-code-analysis
         fn_arg_count::make_collector(),
         basic_structs::make_collector(),
-        basic_enums::make_collector(),
+        basic_enums::make_collector::<Unaggregated>(),
         basic_traits::make_collector(),
-        complexity::make_collector(),
+        complexity::make_collector::<Unaggregated>(),
         stmt_size::make_collector(),
         basic_files::make_collector(),
         methods::make_collector(),
