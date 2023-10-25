@@ -71,11 +71,9 @@ mod tests {
         check(
             code,
             expect![[r#"
-            {
-              "sum": 7,
-              "avg": 7.0,
-              "mode": 7
-            }"#]],
+                [
+                  7
+                ]"#]],
         );
     }
 
@@ -97,11 +95,10 @@ mod tests {
         check(
             code,
             expect![[r#"
-            {
-              "sum": 4,
-              "avg": 2.0,
-              "mode": 3
-            }"#]],
+                [
+                  1,
+                  3
+                ]"#]],
         )
     }
 }
