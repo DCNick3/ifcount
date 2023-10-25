@@ -118,28 +118,20 @@ mod tests {
         check::<Files>(
             code,
             expect![[r#"
-            {
-              "struct_count": {
-                "sum": 2,
-                "avg": 2.0,
-                "mode": 2
-              },
-              "enum_count": {
-                "sum": 1,
-                "avg": 1.0,
-                "mode": 1
-              },
-              "impl_block_count": {
-                "sum": 2,
-                "avg": 2.0,
-                "mode": 2
-              },
-              "pub_fn_count": {
-                "sum": 3,
-                "avg": 3.0,
-                "mode": 3
-              }
-            }"#]],
+                {
+                  "struct_count": [
+                    2
+                  ],
+                  "enum_count": [
+                    1
+                  ],
+                  "impl_block_count": [
+                    2
+                  ],
+                  "pub_fn_count": [
+                    3
+                  ]
+                }"#]],
         );
     }
 }
