@@ -1,15 +1,18 @@
-use super::prelude::*;
-use crate::collector::metrics::util::{Hist, Monoid};
+use super::prelude::{
+    util::{Observer, Unaggregated},
+    *,
+};
+use crate::collector::metrics::util::Monoid;
 use syn::{Block, Expr, ExprClosure, ImplItemFn, ItemFn};
 
 #[derive(Default)]
-struct VisitorAvgMethodDepth {
+struct VisitorAvgMethodDepth<Obs = Unaggregated> {
     current_depth: u32,
     max_depth: u32,
-    hist: Hist,
+    observer: Obs,
 }
 
-impl VisitorAvgMethodDepth {
+impl<Obs: Observer> VisitorAvgMethodDepth<Obs> {
     fn handle_depth(&mut self, inner: impl FnOnce(&mut Self)) {
         let start_depth = self.current_depth;
         // reset max_depth for this function
@@ -20,7 +23,7 @@ impl VisitorAvgMethodDepth {
 
         let depth = self.max_depth - start_depth;
         assert_ne!(depth, 0, "depth should never be 0");
-        self.hist.observe(depth as usize);
+        self.observer.observe(depth as usize);
         self.max_depth = old_max_depth;
     }
 
@@ -34,7 +37,7 @@ impl VisitorAvgMethodDepth {
     }
 }
 
-impl Visit<'_> for VisitorAvgMethodDepth {
+impl<Obs: Observer> Visit<'_> for VisitorAvgMethodDepth<Obs> {
     fn visit_block(&mut self, i: &'_ Block) {
         self.add_depth();
         syn::visit::visit_block(self, i);
@@ -64,11 +67,13 @@ impl Visit<'_> for VisitorAvgMethodDepth {
     }
 }
 
-pub fn make_collector() -> MetricCollectorBox {
+pub fn make_collector<
+    Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync + 'static,
+>() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "fn_depth",
-        VisitorAvgMethodDepth::default(),
-        |v| v.hist,
+        VisitorAvgMethodDepth::<Obs>::default(),
+        |v| v.observer,
         |v| Monoid::reduce(v.iter().cloned()),
     )
     .make_box()
@@ -76,15 +81,17 @@ pub fn make_collector() -> MetricCollectorBox {
 
 #[cfg(test)]
 mod tests {
+    use crate::collector::metrics::util::Unaggregated;
+
     use super::VisitorAvgMethodDepth;
     use expect_test::{expect, Expect};
     use syn::parse_quote;
     use syn::visit::Visit;
 
     fn check(code: syn::File, expect: Expect) {
-        let mut metric = VisitorAvgMethodDepth::default();
+        let mut metric = VisitorAvgMethodDepth::<Unaggregated>::default();
         metric.visit_file(&code);
-        let metric = serde_json::to_string(&metric.hist.into_values()).unwrap();
+        let metric = serde_json::to_string(&metric.observer).unwrap();
         expect.assert_eq(&metric)
     }
 
@@ -128,7 +135,7 @@ mod tests {
                     }
                 }
             },
-            expect![["[1,2]"]],
+            expect!["[2,1]"],
         );
         check(
             parse_quote! {
