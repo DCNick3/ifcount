@@ -70,7 +70,10 @@ impl Hist {
     /// None means that inf is the most frequent value,
     /// so the number of buckets should probably be increased
     pub fn mode(&self) -> Option<usize> {
-        self.buckets
+        let mut buckets: Vec<_> = self.buckets.iter().collect();
+        // so that mode is determenistic on equal values
+        buckets.sort_by(|(val1, _), (val2, _)| val1.cmp(val2));
+        buckets
             .iter()
             // not very correct as it returns the last value if
             // there are two maxes, but oh well
@@ -210,5 +213,26 @@ mod tests {
         assert_eq!(hist.average(), 23.0 / 8.0);
         assert_eq!(hist.mode(), Some(1));
         assert_eq!(hist.into_values(), vec![1, 1, 1, 2, 3, 4, 5, 6]);
+    }
+
+    #[test]
+    fn determenistic_mode() {
+        let mut hist1 = super::Hist::init();
+        hist1.observe(1);
+        hist1.observe(1);
+        hist1.observe(2);
+        hist1.observe(2);
+        assert_eq!(hist1.mode(), Some(2));
+
+        let mut hist2 = super::Hist::init();
+        hist2.observe(0);
+        hist2.observe(1);
+        hist2.observe(1);
+        hist2.observe(1);
+        hist2.observe(5);
+        hist2.observe(5);
+        hist2.observe(5);
+        hist2.observe(6);
+        assert_eq!(hist2.mode(), Some(5));
     }
 }
