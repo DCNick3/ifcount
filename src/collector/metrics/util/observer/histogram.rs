@@ -43,6 +43,10 @@ impl Observer for Hist {
     fn observe(&mut self, value: usize) {
         self.observe(value);
     }
+
+    fn count(&self) -> usize {
+        self.count() as usize
+    }
 }
 
 impl Hist {
