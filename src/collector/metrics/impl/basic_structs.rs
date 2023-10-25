@@ -81,28 +81,26 @@ mod tests {
         check::<Structs>(
             code,
             expect![[r#"
-            {
-              "fields_count": {
-                "sum": 4,
-                "avg": 2.0,
-                "mode": 3
-              },
-              "public_fields_count": {
-                "sum": 2,
-                "avg": 1.0,
-                "mode": 2
-              },
-              "attrs_count": {
-                "sum": 3,
-                "avg": 1.5,
-                "mode": 2
-              },
-              "field_attr_count": {
-                "sum": 1,
-                "avg": 0.25,
-                "mode": 0
-              }
-            }"#]],
+                {
+                  "fields_count": [
+                    1,
+                    3
+                  ],
+                  "public_fields_count": [
+                    0,
+                    2
+                  ],
+                  "attrs_count": [
+                    1,
+                    2
+                  ],
+                  "field_attr_count": [
+                    0,
+                    0,
+                    0,
+                    1
+                  ]
+                }"#]],
         );
     }
 
@@ -136,28 +134,39 @@ mod tests {
         check::<Structs>(
             code,
             expect![[r#"
-            {
-              "fields_count": {
-                "sum": 8,
-                "avg": 1.6,
-                "mode": 3
-              },
-              "public_fields_count": {
-                "sum": 3,
-                "avg": 0.6,
-                "mode": 0
-              },
-              "attrs_count": {
-                "sum": 1,
-                "avg": 0.2,
-                "mode": 0
-              },
-              "field_attr_count": {
-                "sum": 2,
-                "avg": 0.25,
-                "mode": 0
-              }
-            }"#]],
+                {
+                  "fields_count": [
+                    0,
+                    1,
+                    1,
+                    3,
+                    3
+                  ],
+                  "public_fields_count": [
+                    0,
+                    0,
+                    0,
+                    1,
+                    2
+                  ],
+                  "attrs_count": [
+                    0,
+                    1,
+                    0,
+                    0,
+                    0
+                  ],
+                  "field_attr_count": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }"#]],
         )
     }
 }
