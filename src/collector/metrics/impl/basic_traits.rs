@@ -85,31 +85,11 @@ mod tests {
             code,
             expect![[r#"
                 {
-                  "generic_param_count": {
-                    "sum": 0,
-                    "avg": null,
-                    "mode": null
-                  },
-                  "supertrait_count": {
-                    "sum": 0,
-                    "avg": null,
-                    "mode": null
-                  },
-                  "default_fn_count": {
-                    "sum": 0,
-                    "avg": null,
-                    "mode": null
-                  },
-                  "all_fn_count": {
-                    "sum": 0,
-                    "avg": null,
-                    "mode": null
-                  },
-                  "assoc_type_count": {
-                    "sum": 0,
-                    "avg": null,
-                    "mode": null
-                  }
+                  "generic_param_count": [],
+                  "supertrait_count": [],
+                  "default_fn_count": [],
+                  "all_fn_count": [],
+                  "assoc_type_count": []
                 }"#]],
         );
     }
@@ -125,31 +105,21 @@ mod tests {
             code,
             expect![[r#"
                 {
-                  "generic_param_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "supertrait_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "default_fn_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "all_fn_count": {
-                    "sum": 1,
-                    "avg": 1.0,
-                    "mode": 1
-                  },
-                  "assoc_type_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  }
+                  "generic_param_count": [
+                    0
+                  ],
+                  "supertrait_count": [
+                    0
+                  ],
+                  "default_fn_count": [
+                    0
+                  ],
+                  "all_fn_count": [
+                    1
+                  ],
+                  "assoc_type_count": [
+                    0
+                  ]
                 }"#]],
         );
     }
@@ -171,31 +141,21 @@ mod tests {
             code,
             expect![[r#"
                 {
-                  "generic_param_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "supertrait_count": {
-                    "sum": 2,
-                    "avg": 2.0,
-                    "mode": 2
-                  },
-                  "default_fn_count": {
-                    "sum": 2,
-                    "avg": 2.0,
-                    "mode": 2
-                  },
-                  "all_fn_count": {
-                    "sum": 3,
-                    "avg": 3.0,
-                    "mode": 3
-                  },
-                  "assoc_type_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  }
+                  "generic_param_count": [
+                    0
+                  ],
+                  "supertrait_count": [
+                    2
+                  ],
+                  "default_fn_count": [
+                    2
+                  ],
+                  "all_fn_count": [
+                    3
+                  ],
+                  "assoc_type_count": [
+                    0
+                  ]
                 }"#]],
         );
     }
@@ -212,31 +172,21 @@ mod tests {
             code,
             expect![[r#"
                 {
-                  "generic_param_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "supertrait_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "default_fn_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "all_fn_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "assoc_type_count": {
-                    "sum": 2,
-                    "avg": 2.0,
-                    "mode": 2
-                  }
+                  "generic_param_count": [
+                    0
+                  ],
+                  "supertrait_count": [
+                    0
+                  ],
+                  "default_fn_count": [
+                    0
+                  ],
+                  "all_fn_count": [
+                    0
+                  ],
+                  "assoc_type_count": [
+                    2
+                  ]
                 }"#]],
         );
     }
@@ -257,31 +207,26 @@ mod tests {
             code,
             expect![[r#"
                 {
-                  "generic_param_count": {
-                    "sum": 3,
-                    "avg": 1.5,
-                    "mode": 2
-                  },
-                  "supertrait_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "default_fn_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "all_fn_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "assoc_type_count": {
-                    "sum": 4,
-                    "avg": 2.0,
-                    "mode": 2
-                  }
+                  "generic_param_count": [
+                    1,
+                    2
+                  ],
+                  "supertrait_count": [
+                    0,
+                    0
+                  ],
+                  "default_fn_count": [
+                    0,
+                    0
+                  ],
+                  "all_fn_count": [
+                    0,
+                    0
+                  ],
+                  "assoc_type_count": [
+                    2,
+                    2
+                  ]
                 }"#]],
         );
     }
@@ -300,31 +245,21 @@ mod tests {
             code,
             expect![[r#"
                 {
-                  "generic_param_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "supertrait_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "default_fn_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "all_fn_count": {
-                    "sum": 0,
-                    "avg": 0.0,
-                    "mode": 0
-                  },
-                  "assoc_type_count": {
-                    "sum": 2,
-                    "avg": 2.0,
-                    "mode": 2
-                  }
+                  "generic_param_count": [
+                    0
+                  ],
+                  "supertrait_count": [
+                    0
+                  ],
+                  "default_fn_count": [
+                    0
+                  ],
+                  "all_fn_count": [
+                    0
+                  ],
+                  "assoc_type_count": [
+                    2
+                  ]
                 }"#]],
         );
     }
