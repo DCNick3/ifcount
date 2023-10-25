@@ -62,23 +62,11 @@ mod tests {
         check::<Enums>(
             code,
             expect![[r#"
-            {
-              "variant_count": {
-                "sum": 0,
-                "avg": null,
-                "mode": null
-              },
-              "attr_count": {
-                "sum": 0,
-                "avg": null,
-                "mode": null
-              },
-              "variant_attr_count": {
-                "sum": 0,
-                "avg": null,
-                "mode": null
-              }
-            }"#]],
+                {
+                  "variant_count": [],
+                  "attr_count": [],
+                  "variant_attr_count": []
+                }"#]],
         );
     }
 
@@ -101,23 +89,23 @@ mod tests {
         check::<Enums>(
             code,
             expect![[r#"
-            {
-              "variant_count": {
-                "sum": 5,
-                "avg": 2.5,
-                "mode": 3
-              },
-              "attr_count": {
-                "sum": 2,
-                "avg": 1.0,
-                "mode": 1
-              },
-              "variant_attr_count": {
-                "sum": 0,
-                "avg": 0.0,
-                "mode": 0
-              }
-            }"#]],
+                {
+                  "variant_count": [
+                    3,
+                    2
+                  ],
+                  "attr_count": [
+                    1,
+                    1
+                  ],
+                  "variant_attr_count": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }"#]],
         );
     }
 
@@ -140,23 +128,22 @@ mod tests {
         check::<Enums>(
             code,
             expect![[r#"
-            {
-              "variant_count": {
-                "sum": 6,
-                "avg": 6.0,
-                "mode": 6
-              },
-              "attr_count": {
-                "sum": 2,
-                "avg": 2.0,
-                "mode": 2
-              },
-              "variant_attr_count": {
-                "sum": 2,
-                "avg": 0.3333333333333333,
-                "mode": 0
-              }
-            }"#]],
+                {
+                  "variant_count": [
+                    6
+                  ],
+                  "attr_count": [
+                    2
+                  ],
+                  "variant_attr_count": [
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }"#]],
         );
     }
 }
