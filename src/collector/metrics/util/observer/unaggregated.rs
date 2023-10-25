@@ -43,4 +43,8 @@ impl Observer for Unaggregated {
     fn observe(&mut self, value: usize) {
         self.observations.push(value);
     }
+
+    fn count(&self) -> usize {
+        self.observations.len()
+    }
 }
