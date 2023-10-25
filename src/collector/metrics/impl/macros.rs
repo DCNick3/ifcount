@@ -1,25 +1,28 @@
-use super::prelude::*;
-use util::{Hist, Monoid};
+use super::prelude::{
+    util::{Observer, Unaggregated},
+    *,
+};
+use util::Monoid;
 
 #[derive(Default, Clone, Serialize)]
-struct MacroStats {
-    argument_size: Hist,
-    count_per_file: Hist,
+struct MacroStats<Obs = Unaggregated> {
+    argument_size: Obs,
+    count_per_file: Obs,
 }
 
-impl Monoid for MacroStats {
+impl<T: Monoid + Default> Monoid for MacroStats<T> {
     fn init() -> Self {
         Self::default()
     }
     fn unite(self, rhs: Self) -> Self {
         Self {
-            argument_size: self.argument_size + rhs.argument_size,
-            count_per_file: self.count_per_file + rhs.count_per_file,
+            argument_size: self.argument_size.unite(rhs.argument_size),
+            count_per_file: self.count_per_file.unite(rhs.count_per_file),
         }
     }
 }
 
-impl Visit<'_> for MacroStats {
+impl<Obs: Observer> Visit<'_> for MacroStats<Obs> {
     fn visit_file(&mut self, i: &'_ syn::File) {
         let start_count = self.argument_size.count();
         syn::visit::visit_file(self, i);
@@ -35,13 +38,12 @@ impl Visit<'_> for MacroStats {
     }
 }
 
-pub fn make_collector() -> MetricCollectorBox {
+pub fn make_collector<
+    Obs: Observer + Default + Serialize + Clone + Monoid + Send + Sync + 'static,
+>() -> MetricCollectorBox {
     util::VisitorCollector::new(
         "macro",
-        MacroStats {
-            argument_size: Hist::default(),
-            count_per_file: Hist::default(),
-        },
+        MacroStats::<Obs>::default(),
         |v| v,
         |v| Monoid::reduce(v.iter().cloned()),
     )
@@ -68,18 +70,14 @@ mod tests {
         check::<MacroStats>(
             code,
             expect![[r#"
-            {
-              "argument_size": {
-                "sum": 4,
-                "avg": 4.0,
-                "mode": 4
-              },
-              "count_per_file": {
-                "sum": 1,
-                "avg": 1.0,
-                "mode": 1
-              }
-            }"#]],
+                {
+                  "argument_size": [
+                    4
+                  ],
+                  "count_per_file": [
+                    1
+                  ]
+                }"#]],
         )
     }
 
@@ -94,18 +92,16 @@ mod tests {
         check::<MacroStats>(
             code,
             expect![[r#"
-            {
-              "argument_size": {
-                "sum": 3,
-                "avg": 1.0,
-                "mode": 1
-              },
-              "count_per_file": {
-                "sum": 3,
-                "avg": 3.0,
-                "mode": 3
-              }
-            }"#]],
+                {
+                  "argument_size": [
+                    1,
+                    1,
+                    1
+                  ],
+                  "count_per_file": [
+                    3
+                  ]
+                }"#]],
         )
     }
 
@@ -124,18 +120,14 @@ mod tests {
         check::<MacroStats>(
             code,
             expect![[r#"
-            {
-              "argument_size": {
-                "sum": 4,
-                "avg": 4.0,
-                "mode": 4
-              },
-              "count_per_file": {
-                "sum": 1,
-                "avg": 1.0,
-                "mode": 1
-              }
-            }"#]],
+                {
+                  "argument_size": [
+                    4
+                  ],
+                  "count_per_file": [
+                    1
+                  ]
+                }"#]],
         )
     }
 }
