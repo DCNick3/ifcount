@@ -31,7 +31,7 @@ mod stmt_size;
 
 pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
     collectors![
-        fn_depth::make_collector(),
+        fn_depth::make_collector::<Unaggregated>(),
         if_count::make_collector(),
         fn_arg_count::make_collector::<Unaggregated>(),
         basic_structs::make_collector::<Unaggregated>(),
@@ -41,6 +41,6 @@ pub fn get_metric_collectors() -> Vec<MetricCollectorBox> {
         stmt_size::make_collector::<Unaggregated>(),
         basic_files::make_collector::<Unaggregated>(),
         methods::make_collector::<Unaggregated>(),
-        macros::make_collector(),
+        macros::make_collector::<Unaggregated>(),
     ]
 }
