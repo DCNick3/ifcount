@@ -123,11 +123,9 @@ mod tests {
         check::<ImplLcom4>(
             code,
             expect![[r#"
-            {
-              "sum": 1,
-              "avg": 1.0,
-              "mode": 1
-            }"#]],
+                [
+                  1
+                ]"#]],
         );
     }
 
@@ -146,11 +144,9 @@ mod tests {
         check::<ImplLcom4>(
             code,
             expect![[r#"
-            {
-              "sum": 2,
-              "avg": 2.0,
-              "mode": 2
-            }"#]],
+                [
+                  2
+                ]"#]],
         );
     }
 }
