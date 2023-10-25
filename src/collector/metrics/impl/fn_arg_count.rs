@@ -92,13 +92,12 @@ mod tests {
         check::<FnArgsCount>(
             code,
             expect![[r#"
-            {
-              "mutable": {
-                "sum": 4,
-                "avg": 2.0,
-                "mode": 2
-              }
-            }"#]],
+                {
+                  "mutable": [
+                    2,
+                    2
+                  ]
+                }"#]],
         );
     }
 
@@ -116,13 +115,12 @@ mod tests {
         check::<FnArgsCount>(
             code,
             expect![[r#"
-            {
-              "mutable": {
-                "sum": 1,
-                "avg": 0.5,
-                "mode": 1
-              }
-            }"#]],
+                {
+                  "mutable": [
+                    0,
+                    1
+                  ]
+                }"#]],
         );
     }
 }
