@@ -4,6 +4,8 @@ use average::{Estimate, Mean};
 use rust_code_analysis::{cognitive, cyclomatic, exit, halstead, loc, mi, nargs, nom, CodeMetrics};
 use serde::Serialize;
 
+use super::metrics::util::{Observer, Unaggregated};
+
 /// Serializable mean
 #[derive(Default)]
 struct SerMean(Mean);
@@ -31,143 +33,143 @@ impl Serialize for SerMean {
 }
 
 #[derive(Default, Serialize)]
-pub struct Cognitive {
-    average: SerMean,
-    max: SerMean,
-    min: SerMean,
-    sum: SerMean,
+pub struct Cognitive<Obs> {
+    average: Obs,
+    max: Obs,
+    min: Obs,
+    sum: Obs,
 }
 
-impl Cognitive {
+impl<Obs: Observer<f64>> Cognitive<Obs> {
     fn observe(&mut self, stats: &cognitive::Stats) {
         let avg = stats.cognitive_average();
         if !avg.is_finite() {
             return;
         }
-        self.average.add(avg);
-        self.max.add(stats.cognitive_max());
-        self.min.add(stats.cognitive_min());
-        self.sum.add(stats.cognitive_sum());
+        self.average.observe(avg);
+        self.max.observe(stats.cognitive_max());
+        self.min.observe(stats.cognitive_min());
+        self.sum.observe(stats.cognitive_sum());
     }
 }
 
 #[derive(Default, Serialize)]
-pub struct Cyclomatic {
-    average: SerMean,
-    max: SerMean,
-    min: SerMean,
-    sum: SerMean,
+pub struct Cyclomatic<Obs> {
+    average: Obs,
+    max: Obs,
+    min: Obs,
+    sum: Obs,
 }
 
-impl Cyclomatic {
+impl<Obs: Observer<f64>> Cyclomatic<Obs> {
     fn observe(&mut self, stats: &cyclomatic::Stats) {
-        self.average.add(stats.cyclomatic_average());
-        self.max.add(stats.cyclomatic_max());
-        self.min.add(stats.cyclomatic_min());
-        self.sum.add(stats.cyclomatic_sum());
+        self.average.observe(stats.cyclomatic_average());
+        self.max.observe(stats.cyclomatic_max());
+        self.min.observe(stats.cyclomatic_min());
+        self.sum.observe(stats.cyclomatic_sum());
     }
 }
 
 #[derive(Default, Serialize)]
 #[allow(non_snake_case)]
-pub struct Halstead {
-    N1: SerMean,
-    N2: SerMean,
-    bugs: SerMean,
-    difficulty: SerMean,
-    effort: SerMean,
-    estimated_program_length: SerMean,
-    length: SerMean,
-    level: SerMean,
-    n1: SerMean,
-    n2: SerMean,
-    purity_ratio: SerMean,
-    time: SerMean,
-    vocabulary: SerMean,
-    volume: SerMean,
+pub struct Halstead<Obs> {
+    N1: Obs,
+    N2: Obs,
+    bugs: Obs,
+    difficulty: Obs,
+    effort: Obs,
+    estimated_program_length: Obs,
+    length: Obs,
+    level: Obs,
+    n1: Obs,
+    n2: Obs,
+    purity_ratio: Obs,
+    time: Obs,
+    vocabulary: Obs,
+    volume: Obs,
 }
 
-impl Halstead {
+impl<Obs: Observer<f64>> Halstead<Obs> {
     fn observe(&mut self, stats: &halstead::Stats) {
         // most metrics don't work with 0 u_operands or u_operators
         if stats.u_operands() == 0. || stats.u_operators() == 0. {
             return;
         }
-        self.N1.add(stats.operators());
-        self.N2.add(stats.operands());
-        self.n1.add(stats.u_operators());
-        self.n2.add(stats.u_operands());
-        self.bugs.add(stats.bugs());
-        self.difficulty.add(stats.difficulty());
-        self.effort.add(stats.effort());
+        self.N1.observe(stats.operators());
+        self.N2.observe(stats.operands());
+        self.n1.observe(stats.u_operators());
+        self.n2.observe(stats.u_operands());
+        self.bugs.observe(stats.bugs());
+        self.difficulty.observe(stats.difficulty());
+        self.effort.observe(stats.effort());
         self.estimated_program_length
-            .add(stats.estimated_program_length());
-        self.length.add(stats.length());
-        self.level.add(stats.level());
-        self.purity_ratio.add(stats.purity_ratio());
-        self.time.add(stats.time());
-        self.vocabulary.add(stats.vocabulary());
-        self.volume.add(stats.volume());
+            .observe(stats.estimated_program_length());
+        self.length.observe(stats.length());
+        self.level.observe(stats.level());
+        self.purity_ratio.observe(stats.purity_ratio());
+        self.time.observe(stats.time());
+        self.vocabulary.observe(stats.vocabulary());
+        self.volume.observe(stats.volume());
     }
 }
 
 #[derive(Default, Serialize)]
-pub struct Loc {
-    blank: SerMean,
-    blank_average: SerMean,
-    blank_max: SerMean,
-    blank_min: SerMean,
-    cloc: SerMean,
-    cloc_average: SerMean,
-    cloc_max: SerMean,
-    cloc_min: SerMean,
-    lloc: SerMean,
-    lloc_average: SerMean,
-    lloc_max: SerMean,
-    lloc_min: SerMean,
-    ploc: SerMean,
-    ploc_average: SerMean,
-    ploc_max: SerMean,
-    ploc_min: SerMean,
-    sloc: SerMean,
-    sloc_average: SerMean,
-    sloc_max: SerMean,
-    sloc_min: SerMean,
+pub struct Loc<Obs> {
+    blank: Obs,
+    blank_average: Obs,
+    blank_max: Obs,
+    blank_min: Obs,
+    cloc: Obs,
+    cloc_average: Obs,
+    cloc_max: Obs,
+    cloc_min: Obs,
+    lloc: Obs,
+    lloc_average: Obs,
+    lloc_max: Obs,
+    lloc_min: Obs,
+    ploc: Obs,
+    ploc_average: Obs,
+    ploc_max: Obs,
+    ploc_min: Obs,
+    sloc: Obs,
+    sloc_average: Obs,
+    sloc_max: Obs,
+    sloc_min: Obs,
 }
 
-impl Loc {
+impl<Obs: Observer<f64>> Loc<Obs> {
     fn observe(&mut self, stats: &loc::Stats) {
-        self.blank.add(stats.blank());
-        self.blank_average.add(stats.blank_average());
-        self.blank_max.add(stats.blank_max());
-        self.blank_min.add(stats.blank_min());
-        self.cloc.add(stats.cloc());
-        self.cloc_average.add(stats.cloc_average());
-        self.cloc_max.add(stats.cloc_max());
-        self.cloc_min.add(stats.cloc_min());
-        self.lloc.add(stats.lloc());
-        self.lloc_average.add(stats.lloc_average());
-        self.lloc_max.add(stats.lloc_max());
-        self.lloc_min.add(stats.lloc_min());
-        self.ploc.add(stats.ploc());
-        self.ploc_average.add(stats.ploc_average());
-        self.ploc_max.add(stats.ploc_max());
-        self.ploc_min.add(stats.ploc_min());
-        self.sloc.add(stats.sloc());
-        self.sloc_average.add(stats.sloc_average());
-        self.sloc_max.add(stats.sloc_max());
-        self.sloc_min.add(stats.sloc_min());
+        self.blank.observe(stats.blank());
+        self.blank_average.observe(stats.blank_average());
+        self.blank_max.observe(stats.blank_max());
+        self.blank_min.observe(stats.blank_min());
+        self.cloc.observe(stats.cloc());
+        self.cloc_average.observe(stats.cloc_average());
+        self.cloc_max.observe(stats.cloc_max());
+        self.cloc_min.observe(stats.cloc_min());
+        self.lloc.observe(stats.lloc());
+        self.lloc_average.observe(stats.lloc_average());
+        self.lloc_max.observe(stats.lloc_max());
+        self.lloc_min.observe(stats.lloc_min());
+        self.ploc.observe(stats.ploc());
+        self.ploc_average.observe(stats.ploc_average());
+        self.ploc_max.observe(stats.ploc_max());
+        self.ploc_min.observe(stats.ploc_min());
+        self.sloc.observe(stats.sloc());
+        self.sloc_average.observe(stats.sloc_average());
+        self.sloc_max.observe(stats.sloc_max());
+        self.sloc_min.observe(stats.sloc_min());
     }
 }
 
 #[derive(Default, Serialize)]
-pub struct MI {
-    mi_original: SerMean,
-    mi_sei: SerMean,
-    mi_visual_studio: SerMean,
+pub struct MI<Obs> {
+    mi_original: Obs,
+    mi_sei: Obs,
+    mi_visual_studio: Obs,
 }
 
-impl MI {
+impl<Obs: Observer<f64>> MI<Obs> {
     fn observe(&mut self, stats: &mi::Stats) {
         let original = stats.mi_original();
         let sei = stats.mi_sei();
@@ -175,104 +177,104 @@ impl MI {
         if !original.is_finite() || !sei.is_finite() || !visual_studio.is_finite() {
             return;
         }
-        self.mi_original.add(original);
-        self.mi_sei.add(sei);
-        self.mi_visual_studio.add(visual_studio);
+        self.mi_original.observe(original);
+        self.mi_sei.observe(sei);
+        self.mi_visual_studio.observe(visual_studio);
     }
 }
 
 #[derive(Default, Serialize)]
-pub struct Nargs {
-    average: SerMean,
-    average_closures: SerMean,
-    average_functions: SerMean,
-    closures_max: SerMean,
-    closures_min: SerMean,
-    functions_max: SerMean,
-    functions_min: SerMean,
-    total: SerMean,
-    total_closures: SerMean,
-    total_functions: SerMean,
+pub struct Nargs<Obs> {
+    average: Obs,
+    average_closures: Obs,
+    average_functions: Obs,
+    closures_max: Obs,
+    closures_min: Obs,
+    functions_max: Obs,
+    functions_min: Obs,
+    total: Obs,
+    total_closures: Obs,
+    total_functions: Obs,
 }
 
-impl Nargs {
+impl<Obs: Observer<f64>> Nargs<Obs> {
     fn observe(&mut self, stats: &nargs::Stats) {
-        self.average.add(stats.nargs_average());
-        self.average_closures.add(stats.closure_args_average());
-        self.average_functions.add(stats.fn_args_average());
-        self.closures_max.add(stats.closure_args_max());
-        self.closures_min.add(stats.closure_args_min());
-        self.functions_max.add(stats.fn_args_max());
-        self.functions_min.add(stats.fn_args_min());
-        self.total.add(stats.nargs_total());
-        self.total_closures.add(stats.closure_args_sum());
-        self.total_functions.add(stats.fn_args_sum());
+        self.average.observe(stats.nargs_average());
+        self.average_closures.observe(stats.closure_args_average());
+        self.average_functions.observe(stats.fn_args_average());
+        self.closures_max.observe(stats.closure_args_max());
+        self.closures_min.observe(stats.closure_args_min());
+        self.functions_max.observe(stats.fn_args_max());
+        self.functions_min.observe(stats.fn_args_min());
+        self.total.observe(stats.nargs_total());
+        self.total_closures.observe(stats.closure_args_sum());
+        self.total_functions.observe(stats.fn_args_sum());
     }
 }
 
 #[derive(Default, Serialize)]
-pub struct Nexits {
-    average: SerMean,
-    max: SerMean,
-    min: SerMean,
-    sum: SerMean,
+pub struct Nexits<Obs> {
+    average: Obs,
+    max: Obs,
+    min: Obs,
+    sum: Obs,
 }
 
-impl Nexits {
+impl<Obs: Observer<f64>> Nexits<Obs> {
     fn observe(&mut self, stats: &exit::Stats) {
         let avg = stats.exit_average();
         if !avg.is_finite() {
             return;
         }
-        self.average.add(avg);
-        self.max.add(stats.exit_max());
-        self.min.add(stats.exit_min());
-        self.sum.add(stats.exit_sum());
+        self.average.observe(avg);
+        self.max.observe(stats.exit_max());
+        self.min.observe(stats.exit_min());
+        self.sum.observe(stats.exit_sum());
     }
 }
 
 #[derive(Default, Serialize)]
-pub struct Nom {
-    average: SerMean,
-    closures: SerMean,
-    closures_average: SerMean,
-    closures_max: SerMean,
-    closures_min: SerMean,
-    functions: SerMean,
-    functions_average: SerMean,
-    functions_max: SerMean,
-    functions_min: SerMean,
-    total: SerMean,
+pub struct Nom<Obs = Unaggregated<f64>> {
+    average: Obs,
+    closures: Obs,
+    closures_average: Obs,
+    closures_max: Obs,
+    closures_min: Obs,
+    functions: Obs,
+    functions_average: Obs,
+    functions_max: Obs,
+    functions_min: Obs,
+    total: Obs,
 }
 
-impl Nom {
+impl<Obs: Observer<f64>> Nom<Obs> {
     fn observe(&mut self, stats: &nom::Stats) {
-        self.average.add(stats.average());
-        self.closures.add(stats.closures_sum());
-        self.closures_average.add(stats.closures_average());
-        self.closures_max.add(stats.closures_max());
-        self.closures_min.add(stats.closures_min());
-        self.functions.add(stats.functions_sum());
-        self.functions_average.add(stats.functions_average());
-        self.functions_max.add(stats.functions_max());
-        self.functions_min.add(stats.functions_min());
-        self.total.add(stats.total());
+        self.average.observe(stats.average());
+        self.closures.observe(stats.closures_sum());
+        self.closures_average.observe(stats.closures_average());
+        self.closures_max.observe(stats.closures_max());
+        self.closures_min.observe(stats.closures_min());
+        self.functions.observe(stats.functions_sum());
+        self.functions_average.observe(stats.functions_average());
+        self.functions_max.observe(stats.functions_max());
+        self.functions_min.observe(stats.functions_min());
+        self.total.observe(stats.total());
     }
 }
 
 #[derive(Default, Serialize)]
-pub struct RCAMetrics {
-    pub cognitive: Cognitive,
-    pub cyclomatic: Cyclomatic,
-    pub halstead: Halstead,
-    pub loc: Loc,
-    pub mi: MI,
-    pub nargs: Nargs,
-    pub nexits: Nexits,
-    pub nom: Nom,
+pub struct RCAMetrics<Obs = Unaggregated<f64>> {
+    pub cognitive: Cognitive<Obs>,
+    pub cyclomatic: Cyclomatic<Obs>,
+    pub halstead: Halstead<Obs>,
+    pub loc: Loc<Obs>,
+    pub mi: MI<Obs>,
+    pub nargs: Nargs<Obs>,
+    pub nexits: Nexits<Obs>,
+    pub nom: Nom<Obs>,
 }
 
-impl RCAMetrics {
+impl<Obs: Observer<f64>> RCAMetrics<Obs> {
     pub fn observe(&mut self, stats: &CodeMetrics) {
         self.cognitive.observe(&stats.cognitive);
         self.cyclomatic.observe(&stats.cyclomatic);
@@ -293,6 +295,8 @@ mod tests {
     use ::rust_code_analysis::RustParser;
     use expect_test::expect;
 
+    use crate::collector::metrics::util::Unaggregated;
+
     use super::RCAMetrics;
 
     #[test]
@@ -305,7 +309,7 @@ mod tests {
         let stats = ::rust_code_analysis::metrics(&parser, &path)
             .unwrap()
             .metrics;
-        let mut statistics = RCAMetrics::default();
+        let mut statistics = RCAMetrics::<Unaggregated<f64>>::default();
         statistics.observe(&stats);
         let actual = serde_json::to_string_pretty(&statistics).unwrap();
         expect![[r#"
@@ -395,6 +399,7 @@ mod tests {
                 "functions_min": 0.0,
                 "total": 13.0
               }
-            }"#]].assert_eq(&actual);
+            }"#]]
+        .assert_eq(&actual);
     }
 }
