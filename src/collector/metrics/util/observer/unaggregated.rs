@@ -3,18 +3,18 @@ use serde::Serialize;
 use super::{super::Monoid, Observer};
 
 #[derive(Default, Clone)]
-pub struct Unaggregated {
-    observations: Vec<usize>,
+pub struct Unaggregated<T = usize> {
+    observations: Vec<T>,
 }
 
-impl std::ops::Add for Unaggregated {
+impl<T> std::ops::Add for Unaggregated<T> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         self.unite(rhs)
     }
 }
-impl Serialize for Unaggregated {
+impl<T: Serialize> Serialize for Unaggregated<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -23,7 +23,7 @@ impl Serialize for Unaggregated {
     }
 }
 
-impl Monoid for Unaggregated {
+impl<T> Monoid for Unaggregated<T> {
     fn init() -> Self {
         Self {
             observations: Vec::new(),
@@ -39,8 +39,8 @@ impl Monoid for Unaggregated {
     }
 }
 
-impl Observer for Unaggregated {
-    fn observe(&mut self, value: usize) {
+impl<T> Observer<T> for Unaggregated<T> {
+    fn observe(&mut self, value: T) {
         self.observations.push(value);
     }
 
