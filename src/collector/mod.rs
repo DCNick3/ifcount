@@ -2,7 +2,7 @@ mod git;
 mod metrics;
 mod rust_code_analysis;
 
-use crate::collector::git::RepoMetadata;
+use crate::collector::{git::RepoMetadata, metrics::util::Unaggregated};
 use ::rust_code_analysis::{ParserTrait, RustParser};
 use anyhow::{Context, Result};
 use indicatif::ProgressStyle;
@@ -18,7 +18,7 @@ use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 pub use git::LimitedCrab;
 
-use self::rust_code_analysis::RCAMetrics;
+use self::{metrics::util::Observer, rust_code_analysis::RCAMetrics};
 
 #[derive(Clone)]
 pub struct File<T> {
@@ -198,7 +198,7 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
         .collect::<Vec<_>>();
     load_files_span.exit();
 
-    let rust_analysis_metrics = collect_rust_code_analysis(&raw_files)?;
+    let rust_analysis_metrics = collect_rust_code_analysis::<Unaggregated<f64>>(&raw_files)?;
     let mut metrics = collect_file_metrics(&files)?;
     metrics.extend(rust_analysis_metrics);
     let metrics = flatten_metrics(&metrics);
@@ -206,7 +206,7 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
     Ok(RepoResult { meta, metrics })
 }
 
-pub fn collect_rust_code_analysis(
+pub fn collect_rust_code_analysis<Obs: Observer<f64> + Default + Serialize>(
     files: &[File<String>],
 ) -> Result<BTreeMap<String, serde_json::Value>> {
     let byte_sources: Vec<_> = files
@@ -232,7 +232,7 @@ pub fn collect_rust_code_analysis(
         .map(|(_, space)| space.metrics)
         .collect();
 
-    let mut statisics = RCAMetrics::default();
+    let mut statisics = RCAMetrics::<Obs>::default();
     for metrics_batch in file_metrics {
         statisics.observe(&metrics_batch);
     }
@@ -265,7 +265,9 @@ pub async fn collect_github_repo(crab: &LimitedCrab, repo_name: &str) -> Result<
     });
 
     let mut metrics = tokio::task::block_in_place(move || collect_file_metrics(&files))?;
-    let rca_metrics = tokio::task::block_in_place(|| collect_rust_code_analysis(&text_files))?;
+    let rca_metrics = tokio::task::block_in_place(|| {
+        collect_rust_code_analysis::<Unaggregated<f64>>(&text_files)
+    })?;
     metrics.extend(rca_metrics);
     metrics.extend(
         git::get_repo_metrics(crab, repo_name)
