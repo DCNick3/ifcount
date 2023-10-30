@@ -2,7 +2,9 @@ mod git;
 mod metrics;
 mod rust_code_analysis;
 
-use crate::collector::{git::RepoMetadata, metrics::util::Unaggregated};
+use crate::collector::{
+    git::RepoMetadata, metrics::util::Unaggregated, rust_code_analysis::RCAMetricsKinded,
+};
 use ::rust_code_analysis::{ParserTrait, RustParser};
 use anyhow::{Context, Result};
 use indicatif::ProgressStyle;
@@ -225,16 +227,16 @@ pub fn collect_rust_code_analysis<Obs: Observer<f64> + Default + Serialize>(
                 .map_err(|e| error!("{e}"))
                 .map(|space| (path, space))
         })
-        .map(|(path, mut space)| {
-            space.spaces.clear();
-            (path.to_string(), space)
-        })
-        .map(|(_, space)| space.metrics)
+        // .map(|(path, mut space)| {
+        //     space.spaces.clear();
+        //     (path.to_string(), space)
+        // })
+        .map(|(_, space)| space)
         .collect();
 
-    let mut statisics = RCAMetrics::<Obs>::default();
-    for metrics_batch in file_metrics {
-        statisics.observe_metrics(&metrics_batch);
+    let mut statisics = RCAMetricsKinded::<Obs>::default();
+    for function_space in file_metrics {
+        statisics.observe_spaces(&function_space);
     }
 
     let metrics = serde_json::to_value(statisics)?;
