@@ -276,7 +276,9 @@ impl<Obs: Observer<f64>> RCAMetricsKinded<Obs> {
                 .iter()
                 .for_each(|space| self.observe_spaces(space)),
             rust_code_analysis::SpaceKind::Function => {
-                self.function.observe_metrics(&space.metrics);
+                let mut this_space = space.clone();
+                this_space.spaces.clear();
+                self.function.observe_metrics(&this_space.metrics);
                 space
                     .spaces
                     .iter()
@@ -293,14 +295,15 @@ impl<Obs: Observer<f64>> RCAMetricsKinded<Obs> {
             }
             rust_code_analysis::SpaceKind::Trait => {
                 self.r#trait.observe_metrics(&space.metrics);
-                assert_eq!(
-                    space.spaces.len(),
-                    0,
-                    "there should not be any function spaces within traits"
-                );
+                space
+                    .spaces
+                    .iter()
+                    .for_each(|space| self.observe_spaces(space));
             }
             rust_code_analysis::SpaceKind::Impl => {
-                self.r#impl.observe_metrics(&space.metrics);
+                let mut this_space = space.clone();
+                this_space.spaces.clear();
+                self.r#impl.observe_metrics(&this_space.metrics);
                 space
                     .spaces
                     .iter()
@@ -345,89 +348,227 @@ mod tests {
         expect![[r#"
             {
               "cognitive": {
-                "average": 0.46153846153846156,
-                "max": 2.0,
-                "min": 0.0,
-                "sum": 6.0
+                "average": [
+                  0.4117647058823529
+                ],
+                "max": [
+                  2.0
+                ],
+                "min": [
+                  0.0
+                ],
+                "sum": [
+                  7.0
+                ]
               },
               "cyclomatic": {
-                "average": 1.3846153846153846,
-                "max": 4.0,
-                "min": 1.0,
-                "sum": 36.0
+                "average": [
+                  1.5714285714285714
+                ],
+                "max": [
+                  10.0
+                ],
+                "min": [
+                  1.0
+                ],
+                "sum": [
+                  44.0
+                ]
               },
               "halstead": {
-                "N1": 825.0,
-                "N2": 321.0,
-                "bugs": 1.7402193760474183,
-                "difficulty": 51.774193548387096,
-                "effort": 377214.0686662639,
-                "estimated_program_length": 455.59873314173353,
-                "length": 1146.0,
-                "level": 0.019314641744548288,
-                "n1": 20.0,
-                "n2": 62.0,
-                "purity_ratio": 0.3975556135617221,
-                "time": 20956.33714812577,
-                "vocabulary": 82.0,
-                "volume": 7285.754597292324
+                "N1": [
+                  1108.0
+                ],
+                "N2": [
+                  416.0
+                ],
+                "bugs": [
+                  2.291143908608136
+                ],
+                "difficulty": [
+                  55.80487804878049
+                ],
+                "effort": [
+                  569849.8453283607
+                ],
+                "estimated_program_length": [
+                  619.4267599887035
+                ],
+                "length": [
+                  1524.0
+                ],
+                "level": [
+                  0.01791958041958042
+                ],
+                "n1": [
+                  22.0
+                ],
+                "n2": [
+                  82.0
+                ],
+                "purity_ratio": [
+                  0.4064480052419314
+                ],
+                "time": [
+                  31658.324740464483
+                ],
+                "vocabulary": [
+                  104.0
+                ],
+                "volume": [
+                  10211.470130447024
+                ]
               },
               "loc": {
-                "blank": 115.0,
-                "blank_average": 4.423076923076923,
-                "blank_max": 88.0,
-                "blank_min": 0.0,
-                "cloc": 2.0,
-                "cloc_average": 0.07692307692307693,
-                "cloc_max": 1.0,
-                "cloc_min": 0.0,
-                "lloc": 98.0,
-                "lloc_average": 3.769230769230769,
-                "lloc_max": 20.0,
-                "lloc_min": 0.0,
-                "ploc": 283.0,
-                "ploc_average": 10.884615384615385,
-                "ploc_max": 24.0,
-                "ploc_min": 5.0,
-                "sloc": 400.0,
-                "sloc_average": 15.384615384615385,
-                "sloc_max": 101.0,
-                "sloc_min": 5.0
+                "blank": [
+                  1308.0
+                ],
+                "blank_average": [
+                  46.714285714285715
+                ],
+                "blank_max": [
+                  1193.0
+                ],
+                "blank_min": [
+                  0.0
+                ],
+                "cloc": [
+                  1.0
+                ],
+                "cloc_average": [
+                  0.03571428571428571
+                ],
+                "cloc_max": [
+                  1.0
+                ],
+                "cloc_min": [
+                  0.0
+                ],
+                "lloc": [
+                  121.0
+                ],
+                "lloc_average": [
+                  4.321428571428571
+                ],
+                "lloc_max": [
+                  20.0
+                ],
+                "lloc_min": [
+                  4.0
+                ],
+                "ploc": [
+                  339.0
+                ],
+                "ploc_average": [
+                  12.107142857142858
+                ],
+                "ploc_max": [
+                  50.0
+                ],
+                "ploc_min": [
+                  8.0
+                ],
+                "sloc": [
+                  1648.0
+                ],
+                "sloc_average": [
+                  58.857142857142854
+                ],
+                "sloc_max": [
+                  1208.0
+                ],
+                "sloc_min": [
+                  8.0
+                ]
               },
               "mi": {
-                "mi_original": 19.411157599743518,
-                "mi_sei": -38.56467855169339,
-                "mi_visual_studio": 11.351554151896796
+                "mi_original": [
+                  -7.12113473793363
+                ],
+                "mi_sei": [
+                  -79.58678510066837
+                ],
+                "mi_visual_studio": [
+                  0.0
+                ]
               },
               "nargs": {
-                "average": 1.6923076923076923,
-                "average_closures": 0.0,
-                "average_functions": 1.6923076923076923,
-                "closures_max": 0.0,
-                "closures_min": 0.0,
-                "functions_max": 2.0,
-                "functions_min": 0.0,
-                "total": 22.0,
-                "total_closures": 0.0,
-                "total_functions": 22.0
+                "average": [
+                  1.4705882352941178
+                ],
+                "average_closures": [
+                  1.0
+                ],
+                "average_functions": [
+                  1.6666666666666667
+                ],
+                "closures_max": [
+                  1.0
+                ],
+                "closures_min": [
+                  0.0
+                ],
+                "functions_max": [
+                  2.0
+                ],
+                "functions_min": [
+                  0.0
+                ],
+                "total": [
+                  25.0
+                ],
+                "total_closures": [
+                  5.0
+                ],
+                "total_functions": [
+                  20.0
+                ]
               },
               "nexits": {
-                "average": 0.5384615384615384,
-                "max": 1.0,
-                "min": 0.0,
-                "sum": 7.0
+                "average": [
+                  0.23529411764705882
+                ],
+                "max": [
+                  1.0
+                ],
+                "min": [
+                  0.0
+                ],
+                "sum": [
+                  4.0
+                ]
               },
               "nom": {
-                "average": 0.5,
-                "closures": 0.0,
-                "closures_average": 0.0,
-                "closures_max": 0.0,
-                "closures_min": 0.0,
-                "functions": 13.0,
-                "functions_average": 0.5,
-                "functions_max": 1.0,
-                "functions_min": 0.0,
-                "total": 13.0
+                "average": [
+                  0.6071428571428571
+                ],
+                "closures": [
+                  5.0
+                ],
+                "closures_average": [
+                  0.17857142857142858
+                ],
+                "closures_max": [
+                  1.0
+                ],
+                "closures_min": [
+                  0.0
+                ],
+                "functions": [
+                  12.0
+                ],
+                "functions_average": [
+                  0.42857142857142855
+                ],
+                "functions_max": [
+                  1.0
+                ],
+                "functions_min": [
+                  0.0
+                ],
+                "total": [
+                  17.0
+                ]
               }
             }"#]]
         .assert_eq(&actual);
@@ -435,7 +576,49 @@ mod tests {
 
     #[test]
     fn unaggregated_metrics() {
-        let code = include_str!("./mod.rs").to_string().as_bytes().to_vec();
+        let code = r#"
+            struct Test {
+                a: usize,
+                b: i32
+            }
+
+            struct Test2(usize);
+
+            impl Test {
+                fn aboba(&self, other: Type) -> Type{
+                    other
+                }
+                fn abiba(&mut self){}
+                fn new() -> Self{
+                    Test { a: 6, b: 9 }
+                }
+            }
+
+            impl Test2 {
+                fn f1() -> Self {
+                    Test2(69)
+                }
+
+                fn f2() -> Self {
+                    Test2(42)
+                }
+            }
+
+            impl Test3 {}
+            impl Test4 {
+                fn useles(){}
+            }
+
+            trait MyTrait {
+                fn aboba(&mut self);
+                fn default() {
+                    println!("Hello")
+                }
+            }
+            "#
+        .to_string()
+        .as_bytes()
+        .to_vec();
 
         let path = Path::new("mod.rs");
         let parser = RustParser::new(code, path, None);
@@ -444,6 +627,1367 @@ mod tests {
         let mut statistics = RCAMetricsKinded::<Unaggregated<f64>>::default();
         statistics.observe_spaces(&stats);
         let actual = serde_json::to_string_pretty(&statistics).unwrap();
-        expect![[""]].assert_eq(&actual);
+        expect![[r#"
+            {
+              "function": {
+                "cognitive": {
+                  "average": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "sum": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ]
+                },
+                "cyclomatic": {
+                  "average": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "max": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "min": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "sum": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ]
+                },
+                "halstead": {
+                  "N1": [
+                    6.0,
+                    5.0,
+                    6.0,
+                    5.0,
+                    5.0,
+                    3.0,
+                    5.0
+                  ],
+                  "N2": [
+                    4.0,
+                    2.0,
+                    3.0,
+                    3.0,
+                    3.0,
+                    1.0,
+                    3.0
+                  ],
+                  "bugs": [
+                    0.008413009854528818,
+                    0.004471319041702271,
+                    0.005526047247960579,
+                    0.00421201861424495,
+                    0.00421201861424495,
+                    0.0017471609294725976,
+                    0.00421201861424495
+                  ],
+                  "difficulty": [
+                    4.0,
+                    2.5,
+                    2.5,
+                    2.0,
+                    2.0,
+                    1.5,
+                    2.0
+                  ],
+                  "effort": [
+                    126.79700005769249,
+                    49.12871113600807,
+                    67.5,
+                    44.91767875292167,
+                    44.91767875292167,
+                    12.0,
+                    44.91767875292167
+                  ],
+                  "estimated_program_length": [
+                    20.264662506490403,
+                    13.60964047443681,
+                    16.36452797660028,
+                    12.754887502163468,
+                    12.754887502163468,
+                    4.754887502163468,
+                    12.754887502163468
+                  ],
+                  "length": [
+                    10.0,
+                    7.0,
+                    9.0,
+                    8.0,
+                    8.0,
+                    4.0,
+                    8.0
+                  ],
+                  "level": [
+                    0.25,
+                    0.4,
+                    0.4,
+                    0.5,
+                    0.5,
+                    0.6666666666666666,
+                    0.5
+                  ],
+                  "n1": [
+                    6.0,
+                    5.0,
+                    5.0,
+                    4.0,
+                    4.0,
+                    3.0,
+                    4.0
+                  ],
+                  "n2": [
+                    3.0,
+                    2.0,
+                    3.0,
+                    3.0,
+                    3.0,
+                    1.0,
+                    3.0
+                  ],
+                  "purity_ratio": [
+                    2.0264662506490403,
+                    1.944234353490973,
+                    1.81828088628892,
+                    1.5943609377704335,
+                    1.5943609377704335,
+                    1.188721875540867,
+                    1.5943609377704335
+                  ],
+                  "time": [
+                    7.044277780982916,
+                    2.7293728408893374,
+                    3.75,
+                    2.495426597384537,
+                    2.495426597384537,
+                    0.6666666666666666,
+                    2.495426597384537
+                  ],
+                  "vocabulary": [
+                    9.0,
+                    7.0,
+                    8.0,
+                    7.0,
+                    7.0,
+                    4.0,
+                    7.0
+                  ],
+                  "volume": [
+                    31.69925001442312,
+                    19.651484454403228,
+                    27.0,
+                    22.458839376460833,
+                    22.458839376460833,
+                    8.0,
+                    22.458839376460833
+                  ]
+                },
+                "loc": {
+                  "blank": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "blank_average": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "blank_max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "blank_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "cloc": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "cloc_average": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "cloc_max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "cloc_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "lloc": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "lloc_average": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "lloc_max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "lloc_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "ploc": [
+                    3.0,
+                    1.0,
+                    3.0,
+                    3.0,
+                    3.0,
+                    1.0,
+                    3.0
+                  ],
+                  "ploc_average": [
+                    3.0,
+                    1.0,
+                    3.0,
+                    3.0,
+                    3.0,
+                    1.0,
+                    3.0
+                  ],
+                  "ploc_max": [
+                    3.0,
+                    1.0,
+                    3.0,
+                    3.0,
+                    3.0,
+                    1.0,
+                    3.0
+                  ],
+                  "ploc_min": [
+                    3.0,
+                    1.0,
+                    3.0,
+                    3.0,
+                    3.0,
+                    1.0,
+                    3.0
+                  ],
+                  "sloc": [
+                    3.0,
+                    1.0,
+                    3.0,
+                    3.0,
+                    3.0,
+                    1.0,
+                    3.0
+                  ],
+                  "sloc_average": [
+                    3.0,
+                    1.0,
+                    3.0,
+                    3.0,
+                    3.0,
+                    1.0,
+                    3.0
+                  ],
+                  "sloc_max": [
+                    3.0,
+                    1.0,
+                    3.0,
+                    3.0,
+                    3.0,
+                    1.0,
+                    3.0
+                  ],
+                  "sloc_min": [
+                    3.0,
+                    1.0,
+                    3.0,
+                    3.0,
+                    3.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "mi": {
+                  "mi_original": [
+                    134.9997572104644,
+                    155.2836050228807,
+                    135.83412922035413,
+                    136.79172270480979,
+                    136.79172270480979,
+                    159.95690398326485,
+                    136.79172270480979
+                  ],
+                  "mi_sei": [
+                    119.16444811614275,
+                    148.4278547652622,
+                    120.36819247706723,
+                    121.74970784827903,
+                    121.74970784827903,
+                    155.17000000000002,
+                    121.74970784827903
+                  ],
+                  "mi_visual_studio": [
+                    78.94722643886807,
+                    90.80912574437467,
+                    79.4351632867568,
+                    79.99515947649695,
+                    79.99515947649695,
+                    93.54204911302038,
+                    79.99515947649695
+                  ]
+                },
+                "nargs": {
+                  "average": [
+                    2.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "average_closures": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "average_functions": [
+                    2.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "closures_max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "closures_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "functions_max": [
+                    2.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "functions_min": [
+                    2.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "total": [
+                    2.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "total_closures": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "total_functions": [
+                    2.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ]
+                },
+                "nexits": {
+                  "average": [
+                    1.0,
+                    0.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "max": [
+                    1.0,
+                    0.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "min": [
+                    1.0,
+                    0.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "sum": [
+                    1.0,
+                    0.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                },
+                "nom": {
+                  "average": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "closures": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "closures_average": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "closures_max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "closures_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "functions": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "functions_average": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "functions_max": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "functions_min": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "total": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ]
+                }
+              },
+              "struct": {
+                "cognitive": {
+                  "average": [],
+                  "max": [],
+                  "min": [],
+                  "sum": []
+                },
+                "cyclomatic": {
+                  "average": [],
+                  "max": [],
+                  "min": [],
+                  "sum": []
+                },
+                "halstead": {
+                  "N1": [],
+                  "N2": [],
+                  "bugs": [],
+                  "difficulty": [],
+                  "effort": [],
+                  "estimated_program_length": [],
+                  "length": [],
+                  "level": [],
+                  "n1": [],
+                  "n2": [],
+                  "purity_ratio": [],
+                  "time": [],
+                  "vocabulary": [],
+                  "volume": []
+                },
+                "loc": {
+                  "blank": [],
+                  "blank_average": [],
+                  "blank_max": [],
+                  "blank_min": [],
+                  "cloc": [],
+                  "cloc_average": [],
+                  "cloc_max": [],
+                  "cloc_min": [],
+                  "lloc": [],
+                  "lloc_average": [],
+                  "lloc_max": [],
+                  "lloc_min": [],
+                  "ploc": [],
+                  "ploc_average": [],
+                  "ploc_max": [],
+                  "ploc_min": [],
+                  "sloc": [],
+                  "sloc_average": [],
+                  "sloc_max": [],
+                  "sloc_min": []
+                },
+                "mi": {
+                  "mi_original": [],
+                  "mi_sei": [],
+                  "mi_visual_studio": []
+                },
+                "nargs": {
+                  "average": [],
+                  "average_closures": [],
+                  "average_functions": [],
+                  "closures_max": [],
+                  "closures_min": [],
+                  "functions_max": [],
+                  "functions_min": [],
+                  "total": [],
+                  "total_closures": [],
+                  "total_functions": []
+                },
+                "nexits": {
+                  "average": [],
+                  "max": [],
+                  "min": [],
+                  "sum": []
+                },
+                "nom": {
+                  "average": [],
+                  "closures": [],
+                  "closures_average": [],
+                  "closures_max": [],
+                  "closures_min": [],
+                  "functions": [],
+                  "functions_average": [],
+                  "functions_max": [],
+                  "functions_min": [],
+                  "total": []
+                }
+              },
+              "trait": {
+                "cognitive": {
+                  "average": [
+                    0.0
+                  ],
+                  "max": [
+                    0.0
+                  ],
+                  "min": [
+                    0.0
+                  ],
+                  "sum": [
+                    0.0
+                  ]
+                },
+                "cyclomatic": {
+                  "average": [
+                    1.0
+                  ],
+                  "max": [
+                    1.0
+                  ],
+                  "min": [
+                    1.0
+                  ],
+                  "sum": [
+                    2.0
+                  ]
+                },
+                "halstead": {
+                  "N1": [
+                    11.0
+                  ],
+                  "N2": [
+                    5.0
+                  ],
+                  "bugs": [
+                    0.011428621282029667
+                  ],
+                  "difficulty": [
+                    3.5
+                  ],
+                  "effort": [
+                    200.75790004038475
+                  ],
+                  "estimated_program_length": [
+                    31.26112492884004
+                  ],
+                  "length": [
+                    16.0
+                  ],
+                  "level": [
+                    0.2857142857142857
+                  ],
+                  "n1": [
+                    7.0
+                  ],
+                  "n2": [
+                    5.0
+                  ],
+                  "purity_ratio": [
+                    1.9538203080525025
+                  ],
+                  "time": [
+                    11.153216668910265
+                  ],
+                  "vocabulary": [
+                    12.0
+                  ],
+                  "volume": [
+                    57.3594000115385
+                  ]
+                },
+                "loc": {
+                  "blank": [
+                    0.0
+                  ],
+                  "blank_average": [
+                    0.0
+                  ],
+                  "blank_max": [
+                    0.0
+                  ],
+                  "blank_min": [
+                    0.0
+                  ],
+                  "cloc": [
+                    0.0
+                  ],
+                  "cloc_average": [
+                    0.0
+                  ],
+                  "cloc_max": [
+                    0.0
+                  ],
+                  "cloc_min": [
+                    0.0
+                  ],
+                  "lloc": [
+                    0.0
+                  ],
+                  "lloc_average": [
+                    0.0
+                  ],
+                  "lloc_max": [
+                    0.0
+                  ],
+                  "lloc_min": [
+                    0.0
+                  ],
+                  "ploc": [
+                    6.0
+                  ],
+                  "ploc_average": [
+                    3.0
+                  ],
+                  "ploc_max": [
+                    3.0
+                  ],
+                  "ploc_min": [
+                    3.0
+                  ],
+                  "sloc": [
+                    6.0
+                  ],
+                  "sloc_average": [
+                    3.0
+                  ],
+                  "sloc_max": [
+                    3.0
+                  ],
+                  "sloc_min": [
+                    3.0
+                  ]
+                },
+                "mi": {
+                  "mi_original": [
+                    120.45694557033428
+                  ],
+                  "mi_sei": [
+                    98.28542574174926
+                  ],
+                  "mi_visual_studio": [
+                    70.44265822826566
+                  ]
+                },
+                "nargs": {
+                  "average": [
+                    0.0
+                  ],
+                  "average_closures": [
+                    0.0
+                  ],
+                  "average_functions": [
+                    0.0
+                  ],
+                  "closures_max": [
+                    0.0
+                  ],
+                  "closures_min": [
+                    0.0
+                  ],
+                  "functions_max": [
+                    0.0
+                  ],
+                  "functions_min": [
+                    0.0
+                  ],
+                  "total": [
+                    0.0
+                  ],
+                  "total_closures": [
+                    0.0
+                  ],
+                  "total_functions": [
+                    0.0
+                  ]
+                },
+                "nexits": {
+                  "average": [
+                    0.0
+                  ],
+                  "max": [
+                    0.0
+                  ],
+                  "min": [
+                    0.0
+                  ],
+                  "sum": [
+                    0.0
+                  ]
+                },
+                "nom": {
+                  "average": [
+                    0.5
+                  ],
+                  "closures": [
+                    0.0
+                  ],
+                  "closures_average": [
+                    0.0
+                  ],
+                  "closures_max": [
+                    0.0
+                  ],
+                  "closures_min": [
+                    0.0
+                  ],
+                  "functions": [
+                    1.0
+                  ],
+                  "functions_average": [
+                    0.5
+                  ],
+                  "functions_max": [
+                    1.0
+                  ],
+                  "functions_min": [
+                    0.0
+                  ],
+                  "total": [
+                    1.0
+                  ]
+                }
+              },
+              "impl": {
+                "cognitive": {
+                  "average": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "max": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "min": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "sum": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ]
+                },
+                "cyclomatic": {
+                  "average": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "max": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "min": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "sum": [
+                    4.0,
+                    3.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "halstead": {
+                  "N1": [
+                    18.0,
+                    11.0,
+                    4.0
+                  ],
+                  "N2": [
+                    9.0,
+                    6.0,
+                    1.0
+                  ],
+                  "bugs": [
+                    0.01993785835745133,
+                    0.008524812693098637,
+                    0.002027400665191133
+                  ],
+                  "difficulty": [
+                    4.5,
+                    2.4,
+                    1.5
+                  ],
+                  "effort": [
+                    462.5936230299989,
+                    129.33294005884633,
+                    15.0
+                  ],
+                  "estimated_program_length": [
+                    39.302968908806456,
+                    19.60964047443681,
+                    4.754887502163468
+                  ],
+                  "length": [
+                    27.0,
+                    17.0,
+                    5.0
+                  ],
+                  "level": [
+                    0.2222222222222222,
+                    0.4166666666666667,
+                    0.6666666666666666
+                  ],
+                  "n1": [
+                    7.0,
+                    4.0,
+                    3.0
+                  ],
+                  "n2": [
+                    7.0,
+                    5.0,
+                    1.0
+                  ],
+                  "purity_ratio": [
+                    1.4556655151409799,
+                    1.1535082632021652,
+                    0.9509775004326937
+                  ],
+                  "time": [
+                    25.69964572388883,
+                    7.1851633366025744,
+                    0.8333333333333334
+                  ],
+                  "vocabulary": [
+                    14.0,
+                    9.0,
+                    4.0
+                  ],
+                  "volume": [
+                    102.79858289555531,
+                    53.8887250245193,
+                    10.0
+                  ]
+                },
+                "loc": {
+                  "blank": [
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "blank_average": [
+                    0.0,
+                    0.3333333333333333,
+                    0.0,
+                    0.0
+                  ],
+                  "blank_max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "blank_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "cloc": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "cloc_average": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "cloc_max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "cloc_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "lloc": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "lloc_average": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "lloc_max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "lloc_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "ploc": [
+                    9.0,
+                    8.0,
+                    1.0,
+                    3.0
+                  ],
+                  "ploc_average": [
+                    2.25,
+                    2.6666666666666665,
+                    1.0,
+                    1.5
+                  ],
+                  "ploc_max": [
+                    3.0,
+                    3.0,
+                    1.0,
+                    1.0
+                  ],
+                  "ploc_min": [
+                    1.0,
+                    3.0,
+                    1.0,
+                    1.0
+                  ],
+                  "sloc": [
+                    9.0,
+                    9.0,
+                    1.0,
+                    3.0
+                  ],
+                  "sloc_average": [
+                    2.25,
+                    3.0,
+                    1.0,
+                    1.5
+                  ],
+                  "sloc_max": [
+                    3.0,
+                    3.0,
+                    1.0,
+                    1.0
+                  ],
+                  "sloc_min": [
+                    1.0,
+                    3.0,
+                    1.0,
+                    1.0
+                  ]
+                },
+                "mi": {
+                  "mi_original": [
+                    110.3945496942638,
+                    113.98297122851771,
+                    140.76903844000756
+                  ],
+                  "mi_sei": [
+                    83.97209683068972,
+                    89.04727492337257,
+                    127.58958139490298
+                  ],
+                  "mi_visual_studio": [
+                    64.55821619547591,
+                    66.65670832077059,
+                    82.32107511111553
+                  ]
+                },
+                "nargs": {
+                  "average": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "average_closures": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "average_functions": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "closures_max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "closures_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "functions_max": [
+                    2.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "functions_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "total": [
+                    3.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "total_closures": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "total_functions": [
+                    3.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ]
+                },
+                "nexits": {
+                  "average": [
+                    0.6666666666666666,
+                    1.0,
+                    0.0
+                  ],
+                  "max": [
+                    1.0,
+                    1.0,
+                    0.0
+                  ],
+                  "min": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "sum": [
+                    2.0,
+                    2.0,
+                    0.0
+                  ]
+                },
+                "nom": {
+                  "average": [
+                    0.75,
+                    0.6666666666666666,
+                    0.0,
+                    0.5
+                  ],
+                  "closures": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "closures_average": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "closures_max": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "closures_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "functions": [
+                    3.0,
+                    2.0,
+                    0.0,
+                    1.0
+                  ],
+                  "functions_average": [
+                    0.75,
+                    0.6666666666666666,
+                    0.0,
+                    0.5
+                  ],
+                  "functions_max": [
+                    1.0,
+                    1.0,
+                    0.0,
+                    1.0
+                  ],
+                  "functions_min": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "total": [
+                    3.0,
+                    2.0,
+                    0.0,
+                    1.0
+                  ]
+                }
+              }
+            }"#]]
+        .assert_eq(&actual);
     }
 }
