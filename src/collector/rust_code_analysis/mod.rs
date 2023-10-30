@@ -1,36 +1,7 @@
-use std::ops::{Deref, DerefMut};
-
-use average::{Estimate, Mean};
 use rust_code_analysis::{cognitive, cyclomatic, exit, halstead, loc, mi, nargs, nom, CodeMetrics};
 use serde::Serialize;
 
 use super::metrics::util::{Observer, Unaggregated};
-
-/// Serializable mean
-#[derive(Default)]
-struct SerMean(Mean);
-
-impl Deref for SerMean {
-    type Target = Mean;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-impl DerefMut for SerMean {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl Serialize for SerMean {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        self.mean().serialize(serializer)
-    }
-}
 
 #[derive(Default, Serialize)]
 pub struct Cognitive<Obs> {
@@ -263,7 +234,7 @@ impl<Obs: Observer<f64>> Nom<Obs> {
 }
 
 #[derive(Default, Serialize)]
-pub struct RCAMetrics<Obs = Unaggregated<f64>> {
+pub struct RCAMetrics<Obs> {
     pub cognitive: Cognitive<Obs>,
     pub cyclomatic: Cyclomatic<Obs>,
     pub halstead: Halstead<Obs>,
@@ -300,106 +271,107 @@ mod tests {
     use super::RCAMetrics;
 
     #[test]
-    fn cognitive() {
+    fn all_metrics() {
         let code = include_str!("./mod.rs").to_string().as_bytes().to_vec();
 
         let path = Path::new("mod.rs");
         let parser = RustParser::new(code, path, None);
 
-        let stats = ::rust_code_analysis::metrics(&parser, &path)
-            .unwrap()
-            .metrics;
-        let mut statistics = RCAMetrics::<Unaggregated<f64>>::default();
-        statistics.observe(&stats);
-        let actual = serde_json::to_string_pretty(&statistics).unwrap();
-        expect![[r#"
-            {
-              "cognitive": {
-                "average": 0.46153846153846156,
-                "max": 2.0,
-                "min": 0.0,
-                "sum": 6.0
-              },
-              "cyclomatic": {
-                "average": 1.3846153846153846,
-                "max": 4.0,
-                "min": 1.0,
-                "sum": 36.0
-              },
-              "halstead": {
-                "N1": 825.0,
-                "N2": 321.0,
-                "bugs": 1.7402193760474183,
-                "difficulty": 51.774193548387096,
-                "effort": 377214.0686662639,
-                "estimated_program_length": 455.59873314173353,
-                "length": 1146.0,
-                "level": 0.019314641744548288,
-                "n1": 20.0,
-                "n2": 62.0,
-                "purity_ratio": 0.3975556135617221,
-                "time": 20956.33714812577,
-                "vocabulary": 82.0,
-                "volume": 7285.754597292324
-              },
-              "loc": {
-                "blank": 115.0,
-                "blank_average": 4.423076923076923,
-                "blank_max": 88.0,
-                "blank_min": 0.0,
-                "cloc": 2.0,
-                "cloc_average": 0.07692307692307693,
-                "cloc_max": 1.0,
-                "cloc_min": 0.0,
-                "lloc": 98.0,
-                "lloc_average": 3.769230769230769,
-                "lloc_max": 20.0,
-                "lloc_min": 0.0,
-                "ploc": 283.0,
-                "ploc_average": 10.884615384615385,
-                "ploc_max": 24.0,
-                "ploc_min": 5.0,
-                "sloc": 400.0,
-                "sloc_average": 15.384615384615385,
-                "sloc_max": 101.0,
-                "sloc_min": 5.0
-              },
-              "mi": {
-                "mi_original": 19.411157599743518,
-                "mi_sei": -38.56467855169339,
-                "mi_visual_studio": 11.351554151896796
-              },
-              "nargs": {
-                "average": 1.6923076923076923,
-                "average_closures": 0.0,
-                "average_functions": 1.6923076923076923,
-                "closures_max": 0.0,
-                "closures_min": 0.0,
-                "functions_max": 2.0,
-                "functions_min": 0.0,
-                "total": 22.0,
-                "total_closures": 0.0,
-                "total_functions": 22.0
-              },
-              "nexits": {
-                "average": 0.5384615384615384,
-                "max": 1.0,
-                "min": 0.0,
-                "sum": 7.0
-              },
-              "nom": {
-                "average": 0.5,
-                "closures": 0.0,
-                "closures_average": 0.0,
-                "closures_max": 0.0,
-                "closures_min": 0.0,
-                "functions": 13.0,
-                "functions_average": 0.5,
-                "functions_max": 1.0,
-                "functions_min": 0.0,
-                "total": 13.0
-              }
-            }"#]]
-        .assert_eq(&actual);
+        let stats = ::rust_code_analysis::metrics(&parser, &path).unwrap();
+        // .metrics;
+        dbg!(&stats);
+        // let mut statistics = RCAMetrics::<Unaggregated<f64>>::default();
+        // statistics.observe(&stats);
+        // let actual = serde_json::to_string_pretty(&statistics).unwrap();
+        // expect![[r#"
+        //     {
+        //       "cognitive": {
+        //         "average": 0.46153846153846156,
+        //         "max": 2.0,
+        //         "min": 0.0,
+        //         "sum": 6.0
+        //       },
+        //       "cyclomatic": {
+        //         "average": 1.3846153846153846,
+        //         "max": 4.0,
+        //         "min": 1.0,
+        //         "sum": 36.0
+        //       },
+        //       "halstead": {
+        //         "N1": 825.0,
+        //         "N2": 321.0,
+        //         "bugs": 1.7402193760474183,
+        //         "difficulty": 51.774193548387096,
+        //         "effort": 377214.0686662639,
+        //         "estimated_program_length": 455.59873314173353,
+        //         "length": 1146.0,
+        //         "level": 0.019314641744548288,
+        //         "n1": 20.0,
+        //         "n2": 62.0,
+        //         "purity_ratio": 0.3975556135617221,
+        //         "time": 20956.33714812577,
+        //         "vocabulary": 82.0,
+        //         "volume": 7285.754597292324
+        //       },
+        //       "loc": {
+        //         "blank": 115.0,
+        //         "blank_average": 4.423076923076923,
+        //         "blank_max": 88.0,
+        //         "blank_min": 0.0,
+        //         "cloc": 2.0,
+        //         "cloc_average": 0.07692307692307693,
+        //         "cloc_max": 1.0,
+        //         "cloc_min": 0.0,
+        //         "lloc": 98.0,
+        //         "lloc_average": 3.769230769230769,
+        //         "lloc_max": 20.0,
+        //         "lloc_min": 0.0,
+        //         "ploc": 283.0,
+        //         "ploc_average": 10.884615384615385,
+        //         "ploc_max": 24.0,
+        //         "ploc_min": 5.0,
+        //         "sloc": 400.0,
+        //         "sloc_average": 15.384615384615385,
+        //         "sloc_max": 101.0,
+        //         "sloc_min": 5.0
+        //       },
+        //       "mi": {
+        //         "mi_original": 19.411157599743518,
+        //         "mi_sei": -38.56467855169339,
+        //         "mi_visual_studio": 11.351554151896796
+        //       },
+        //       "nargs": {
+        //         "average": 1.6923076923076923,
+        //         "average_closures": 0.0,
+        //         "average_functions": 1.6923076923076923,
+        //         "closures_max": 0.0,
+        //         "closures_min": 0.0,
+        //         "functions_max": 2.0,
+        //         "functions_min": 0.0,
+        //         "total": 22.0,
+        //         "total_closures": 0.0,
+        //         "total_functions": 22.0
+        //       },
+        //       "nexits": {
+        //         "average": 0.5384615384615384,
+        //         "max": 1.0,
+        //         "min": 0.0,
+        //         "sum": 7.0
+        //       },
+        //       "nom": {
+        //         "average": 0.5,
+        //         "closures": 0.0,
+        //         "closures_average": 0.0,
+        //         "closures_max": 0.0,
+        //         "closures_min": 0.0,
+        //         "functions": 13.0,
+        //         "functions_average": 0.5,
+        //         "functions_max": 1.0,
+        //         "functions_min": 0.0,
+        //         "total": 13.0
+        //       }
+        //     }"#]]
+        // .assert_eq(&actual);
+        assert!(false);
     }
 }
