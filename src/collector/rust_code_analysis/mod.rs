@@ -1,4 +1,6 @@
-use rust_code_analysis::{cognitive, cyclomatic, exit, halstead, loc, mi, nargs, nom, CodeMetrics};
+use rust_code_analysis::{
+    cognitive, cyclomatic, exit, halstead, loc, mi, nargs, nom, CodeMetrics, FuncSpace,
+};
 use serde::Serialize;
 
 use super::metrics::util::{Observer, Unaggregated};
@@ -246,7 +248,7 @@ pub struct RCAMetrics<Obs> {
 }
 
 impl<Obs: Observer<f64>> RCAMetrics<Obs> {
-    pub fn observe(&mut self, stats: &CodeMetrics) {
+    pub fn observe_metrics(&mut self, stats: &CodeMetrics) {
         self.cognitive.observe(&stats.cognitive);
         self.cyclomatic.observe(&stats.cyclomatic);
         self.halstead.observe(&stats.halstead);
@@ -255,6 +257,62 @@ impl<Obs: Observer<f64>> RCAMetrics<Obs> {
         self.nargs.observe(&stats.nargs);
         self.nexits.observe(&stats.nexits);
         self.nom.observe(&stats.nom);
+    }
+}
+
+#[derive(Default, Serialize)]
+pub struct RCAMetricsKinded<Obs> {
+    function: RCAMetrics<Obs>,
+    r#struct: RCAMetrics<Obs>,
+    r#trait: RCAMetrics<Obs>,
+    r#impl: RCAMetrics<Obs>,
+}
+
+impl<Obs: Observer<f64>> RCAMetricsKinded<Obs> {
+    pub fn observe_spaces(&mut self, space: &FuncSpace) {
+        match space.kind {
+            rust_code_analysis::SpaceKind::Unknown => space
+                .spaces
+                .iter()
+                .for_each(|space| self.observe_spaces(space)),
+            rust_code_analysis::SpaceKind::Function => {
+                self.function.observe_metrics(&space.metrics);
+                space
+                    .spaces
+                    .iter()
+                    .for_each(|space| self.observe_spaces(space));
+            }
+            rust_code_analysis::SpaceKind::Class => panic!("Class funcspace in rust code"),
+            rust_code_analysis::SpaceKind::Struct => {
+                self.r#struct.observe_metrics(&space.metrics);
+                assert_eq!(
+                    space.spaces.len(),
+                    0,
+                    "there should not be any function spaces within structs"
+                );
+            }
+            rust_code_analysis::SpaceKind::Trait => {
+                self.r#trait.observe_metrics(&space.metrics);
+                assert_eq!(
+                    space.spaces.len(),
+                    0,
+                    "there should not be any function spaces within traits"
+                );
+            }
+            rust_code_analysis::SpaceKind::Impl => {
+                self.r#impl.observe_metrics(&space.metrics);
+                space
+                    .spaces
+                    .iter()
+                    .for_each(|space| self.observe_spaces(space));
+            }
+            rust_code_analysis::SpaceKind::Unit => space
+                .spaces
+                .iter()
+                .for_each(|space| self.observe_spaces(space)),
+            rust_code_analysis::SpaceKind::Namespace => panic!("Namespace funcspace in rust code"),
+            rust_code_analysis::SpaceKind::Interface => panic!("Interface funcspace in rust code"),
+        }
     }
 }
 
@@ -269,9 +327,10 @@ mod tests {
     use crate::collector::metrics::util::Unaggregated;
 
     use super::RCAMetrics;
+    use super::RCAMetricsKinded;
 
     #[test]
-    fn all_metrics() {
+    fn aggregated_metrics() {
         let code = include_str!("./mod.rs").to_string().as_bytes().to_vec();
 
         let path = Path::new("mod.rs");
@@ -281,7 +340,7 @@ mod tests {
         stats.spaces.clear();
         let metrics = stats.metrics;
         let mut statistics = RCAMetrics::<Unaggregated<f64>>::default();
-        statistics.observe_file(&metrics);
+        statistics.observe_metrics(&metrics);
         let actual = serde_json::to_string_pretty(&statistics).unwrap();
         expect![[r#"
             {
@@ -372,5 +431,19 @@ mod tests {
               }
             }"#]]
         .assert_eq(&actual);
+    }
+
+    #[test]
+    fn unaggregated_metrics() {
+        let code = include_str!("./mod.rs").to_string().as_bytes().to_vec();
+
+        let path = Path::new("mod.rs");
+        let parser = RustParser::new(code, path, None);
+
+        let stats = ::rust_code_analysis::metrics(&parser, &path).unwrap();
+        let mut statistics = RCAMetricsKinded::<Unaggregated<f64>>::default();
+        statistics.observe_spaces(&stats);
+        let actual = serde_json::to_string_pretty(&statistics).unwrap();
+        expect![[""]].assert_eq(&actual);
     }
 }

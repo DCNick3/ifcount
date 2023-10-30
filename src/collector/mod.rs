@@ -234,7 +234,7 @@ pub fn collect_rust_code_analysis<Obs: Observer<f64> + Default + Serialize>(
 
     let mut statisics = RCAMetrics::<Obs>::default();
     for metrics_batch in file_metrics {
-        statisics.observe(&metrics_batch);
+        statisics.observe_metrics(&metrics_batch);
     }
 
     let metrics = serde_json::to_value(statisics)?;
