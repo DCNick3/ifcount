@@ -1,4 +1,4 @@
-use prelude::util::{Hist, Unaggregated};
+use prelude::util::Unaggregated;
 
 use super::MetricCollectorBox;
 

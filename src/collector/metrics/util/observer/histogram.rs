@@ -49,6 +49,7 @@ impl Observer for Hist {
     }
 }
 
+#[allow(dead_code)]
 impl Hist {
     /// total number of observations
     pub fn count(&self) -> u64 {

@@ -69,5 +69,3 @@ impl<M: Serialize, C: MetricCollector<AggregatedMetric = M>> MetricCollectorBoxe
 
 use crate::collector::FileAst;
 pub use r#impl::get_metric_collectors;
-
-use self::util::Observer;
