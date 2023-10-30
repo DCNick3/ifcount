@@ -2,6 +2,8 @@ use expect_test::Expect;
 use serde::Serialize;
 use syn::{visit::Visit, File};
 
+#[allow(dead_code)]
+// used in tests
 pub fn check<T>(syntax_tree: File, expect: Expect)
 where
     T: for<'ast> Visit<'ast> + Default + Serialize,

@@ -20,7 +20,7 @@ use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 pub use git::LimitedCrab;
 
-use self::{metrics::util::Observer, rust_code_analysis::RCAMetrics};
+use self::metrics::util::Observer;
 
 #[derive(Clone)]
 pub struct File<T> {

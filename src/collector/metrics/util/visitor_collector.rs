@@ -3,8 +3,6 @@ use crate::collector::FileAst;
 use serde::Serialize;
 use std::marker::PhantomData;
 
-use super::{Monoid, Observer};
-
 /// A helper for collecting metrics using a syn visitor
 pub struct VisitorCollector<
     V: for<'ast> syn::visit::Visit<'ast> + Default + 'static,
