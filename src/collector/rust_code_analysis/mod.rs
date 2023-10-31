@@ -64,9 +64,11 @@ pub struct Halstead<Obs> {
 
 impl<Obs: Observer<f64>> Halstead<Obs> {
     fn observe(&mut self, stats: &halstead::Stats) {
+        let mut stats = stats;
+        let default_stats = halstead::Stats::default();
         // most metrics don't work with 0 u_operands or u_operators
         if stats.u_operands() == 0. || stats.u_operators() == 0. {
-            return;
+            stats = &default_stats;
         }
         self.N1.observe(stats.operators());
         self.N2.observe(stats.operands());
@@ -144,15 +146,17 @@ pub struct MI<Obs> {
 
 impl<Obs: Observer<f64>> MI<Obs> {
     fn observe(&mut self, stats: &mi::Stats) {
-        let original = stats.mi_original();
-        let sei = stats.mi_sei();
-        let visual_studio = stats.mi_visual_studio();
-        if !original.is_finite() || !sei.is_finite() || !visual_studio.is_finite() {
-            return;
+        let mut stats = stats;
+        let default_stats = mi::Stats::default();
+        if !stats.mi_original().is_finite()
+            || !stats.mi_sei().is_finite()
+            || !stats.mi_visual_studio().is_finite()
+        {
+            stats = &default_stats;
         }
-        self.mi_original.observe(original);
-        self.mi_sei.observe(sei);
-        self.mi_visual_studio.observe(visual_studio);
+        self.mi_original.observe(stats.mi_original());
+        self.mi_sei.observe(stats.mi_sei());
+        self.mi_visual_studio.observe(stats.mi_visual_studio());
     }
 }
 
@@ -377,57 +381,57 @@ mod tests {
               },
               "halstead": {
                 "N1": [
-                  1108.0
+                  1123.0
                 ],
                 "N2": [
-                  416.0
+                  426.0
                 ],
                 "bugs": [
-                  2.291143908608136
+                  2.369138531712961
                 ],
                 "difficulty": [
-                  55.80487804878049
+                  57.851851851851855
                 ],
                 "effort": [
-                  569849.8453283607
+                  599194.15231629
                 ],
                 "estimated_program_length": [
-                  619.4267599887035
+                  611.6353458436752
                 ],
                 "length": [
-                  1524.0
+                  1549.0
                 ],
                 "level": [
-                  0.01791958041958042
+                  0.017285531370038413
                 ],
                 "n1": [
                   22.0
                 ],
                 "n2": [
-                  82.0
+                  81.0
                 ],
                 "purity_ratio": [
-                  0.4064480052419314
+                  0.39485819615472895
                 ],
                 "time": [
-                  31658.324740464483
+                  33288.56401757166
                 ],
                 "vocabulary": [
-                  104.0
+                  103.0
                 ],
                 "volume": [
-                  10211.470130447024
+                  10357.389316606805
                 ]
               },
               "loc": {
                 "blank": [
-                  1736.0
+                  1753.0
                 ],
                 "blank_average": [
-                  62.0
+                  62.607142857142854
                 ],
                 "blank_max": [
-                  1483.0
+                  1500.0
                 ],
                 "blank_min": [
                   0.0
@@ -445,10 +449,10 @@ mod tests {
                   0.0
                 ],
                 "lloc": [
-                  121.0
+                  124.0
                 ],
                 "lloc_average": [
-                  4.321428571428571
+                  4.428571428571429
                 ],
                 "lloc_max": [
                   20.0
@@ -457,10 +461,10 @@ mod tests {
                   4.0
                 ],
                 "ploc": [
-                  339.0
+                  343.0
                 ],
                 "ploc_average": [
-                  12.107142857142858
+                  12.25
                 ],
                 "ploc_max": [
                   50.0
@@ -469,13 +473,13 @@ mod tests {
                   8.0
                 ],
                 "sloc": [
-                  2076.0
+                  2097.0
                 ],
                 "sloc_average": [
-                  74.14285714285714
+                  74.89285714285714
                 ],
                 "sloc_max": [
-                  1498.0
+                  1515.0
                 ],
                 "sloc_min": [
                   8.0
@@ -483,10 +487,10 @@ mod tests {
               },
               "mi": {
                 "mi_original": [
-                  -10.861399385758688
+                  -11.09822963608174
                 ],
                 "mi_sei": [
-                  -85.19074175074962
+                  -85.54094450523321
                 ],
                 "mi_visual_studio": [
                   0.0
@@ -526,7 +530,7 @@ mod tests {
               },
               "nexits": {
                 "average": [
-                  0.23529411764705882
+                  0.11764705882352941
                 ],
                 "max": [
                   1.0
@@ -535,7 +539,7 @@ mod tests {
                   0.0
                 ],
                 "sum": [
-                  4.0
+                  2.0
                 ]
               },
               "nom": {
@@ -1716,71 +1720,85 @@ mod tests {
                   "N1": [
                     36.0,
                     11.0,
+                    0.0,
                     4.0
                   ],
                   "N2": [
                     18.0,
                     6.0,
+                    0.0,
                     1.0
                   ],
                   "bugs": [
                     0.05217118764307358,
                     0.008524812693098637,
+                    null,
                     0.002027400665191133
                   ],
                   "difficulty": [
                     7.714285714285714,
                     2.4,
+                    null,
                     1.5
                   ],
                   "effort": [
                     1958.0688882999177,
                     129.33294005884633,
+                    null,
                     15.0
                   ],
                   "estimated_program_length": [
                     96.32251891746033,
                     19.60964047443681,
+                    null,
                     4.754887502163468
                   ],
                   "length": [
                     54.0,
                     17.0,
+                    0.0,
                     5.0
                   ],
                   "level": [
                     0.12962962962962962,
                     0.4166666666666667,
+                    null,
                     0.6666666666666666
                   ],
                   "n1": [
                     12.0,
                     4.0,
+                    0.0,
                     3.0
                   ],
                   "n2": [
                     14.0,
                     5.0,
+                    0.0,
                     1.0
                   ],
                   "purity_ratio": [
                     1.7837503503233394,
                     1.1535082632021652,
+                    null,
                     0.9509775004326937
                   ],
                   "time": [
                     108.78160490555098,
                     7.1851633366025744,
+                    null,
                     0.8333333333333334
                   ],
                   "vocabulary": [
                     26.0,
                     9.0,
+                    0.0,
                     4.0
                   ],
                   "volume": [
                     253.82374477961895,
                     53.8887250245193,
+                    null,
                     10.0
                   ]
                 },
@@ -1910,16 +1928,19 @@ mod tests {
                   "mi_original": [
                     89.80446514057971,
                     113.98297122851771,
+                    null,
                     140.76903844000756
                   ],
                   "mi_sei": [
                     54.57234353181863,
                     89.04727492337257,
+                    null,
                     127.58958139490298
                   ],
                   "mi_visual_studio": [
                     52.5172310763624,
                     66.65670832077059,
+                    null,
                     82.32107511111553
                   ]
                 },
