@@ -48,6 +48,27 @@ impl<Obs: Observer> Visit<'_> for FnArgsCount<Obs> {
 
         visit::visit_signature(self, i);
     }
+
+    //closures signatures are patterns, not fn signatures
+    fn visit_expr_closure(&mut self, i: &'_ syn::ExprClosure) {
+        let mutable = i
+            .inputs
+            .iter()
+            .filter(|arg| match arg {
+                syn::Pat::Type(PatType { ty, .. }) => {
+                    let ty: &Type = &ty;
+                    match ty {
+                        Type::Reference(reference) => reference.mutability.is_some(),
+                        _ => false,
+                    }
+                }
+                syn::Pat::Reference(reference) => reference.mutability.is_some(),
+                _ => false,
+            })
+            .count();
+        self.mutable.observe(mutable);
+        visit::visit_expr_closure(self, i);
+    }
 }
 
 pub fn make_collector<
