@@ -11,6 +11,7 @@ use util::Observer;
 struct ComplexityStats<Obs> {
     item_fn: Obs,
     impl_item_fn: Obs,
+    trait_default_fn: Obs,
     closure: Obs,
     all_fn: Obs,
 }
@@ -20,6 +21,7 @@ impl<T: Monoid> Monoid for ComplexityStats<T> {
         Self {
             item_fn: Monoid::init(),
             impl_item_fn: Monoid::init(),
+            trait_default_fn: Monoid::init(),
             closure: Monoid::init(),
             all_fn: Monoid::init(),
         }
@@ -28,6 +30,7 @@ impl<T: Monoid> Monoid for ComplexityStats<T> {
         Self {
             item_fn: self.item_fn.unite(rhs.item_fn),
             impl_item_fn: self.impl_item_fn.unite(rhs.impl_item_fn),
+            trait_default_fn: self.trait_default_fn.unite(rhs.trait_default_fn),
             closure: self.closure.unite(rhs.closure),
             all_fn: self.all_fn.unite(rhs.all_fn),
         }
@@ -54,6 +57,15 @@ impl<Obs: Observer> Visit<'_> for ComplexityStats<Obs> {
         self.item_fn.observe(value);
         self.all_fn.observe(value);
         visit::visit_item_fn(self, i);
+    }
+
+    fn visit_trait_item_fn(&mut self, i: &'_ syn::TraitItemFn) {
+        if let Some(block) = &i.default {
+            let value = r#impl::eval_block(block, Default::default()).0 as usize;
+            self.trait_default_fn.observe(value);
+            self.all_fn.observe(value);
+        }
+        visit::visit_trait_item_fn(self, i);
     }
 }
 
