@@ -5,7 +5,7 @@ mod rust_code_analysis;
 use crate::collector::{
     git::RepoMetadata, metrics::util::Unaggregated, rust_code_analysis::RCAMetricsKinded,
 };
-use ::rust_code_analysis::{ParserTrait, RustParser};
+use ::rust_code_analysis::{FuncSpace, ParserTrait, RustParser};
 use anyhow::{Context, Result};
 use indicatif::ProgressStyle;
 use rayon::prelude::*;
@@ -193,14 +193,23 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
         })
         .collect::<Vec<_>>();
 
-    let files = raw_files
-        .clone()
+    let (files, rca_files) = raw_files
         .into_par_iter()
-        .filter_map(|f| File::parse(f, Span::current()))
-        .collect::<Vec<_>>();
+        .filter_map(|f| Some((File::parse(f.clone(), Span::current())?, f)))
+        .filter_map(|(file, rca_file)| {
+            let funcspace = parse_rca(&rca_file);
+            if funcspace.is_none() {
+                error!(
+                    "Failed to parse {} with Rust Code Analysis, skipping..",
+                    rca_file.path
+                )
+            }
+            Some((file, funcspace?))
+        })
+        .collect::<(Vec<_>, Vec<_>)>();
     load_files_span.exit();
 
-    let rust_analysis_metrics = collect_rust_code_analysis::<Unaggregated<f64>>(&raw_files)?;
+    let rust_analysis_metrics = collect_rust_code_analysis::<Unaggregated<f64>>(&rca_files)?;
     let mut metrics = collect_file_metrics(&files)?;
     metrics.extend(rust_analysis_metrics);
     let metrics = flatten_metrics(&metrics);
@@ -208,32 +217,33 @@ pub fn collect_local_repo(repo_path: &Path) -> Result<RepoResult> {
     Ok(RepoResult { meta, metrics })
 }
 
-pub fn collect_rust_code_analysis<Obs: Observer<f64> + Default + Serialize>(
-    files: &[File<String>],
-) -> Result<BTreeMap<String, serde_json::Value>> {
-    let byte_sources: Vec<_> = files
+fn valid_space(space: &FuncSpace) -> Option<()> {
+    use ::rust_code_analysis::SpaceKind;
+    if let SpaceKind::Unknown = space.kind {
+        return None;
+    }
+    space
+        .spaces
         .iter()
-        .map(|x| (&x.path, x.content.as_bytes().to_vec()))
-        .collect();
+        .map(valid_space)
+        .collect::<Option<Vec<()>>>()?;
+    Some(())
+}
 
-    let rca_span = info_span!("rust_code_analysis").entered();
-    let file_metrics: Vec<_> = byte_sources
-        .into_par_iter()
-        .flat_map(|(path, contents)| {
-            let _span = info_span!(parent: rca_span.id(), "collect_metric", path = %path).entered();
-            let parser = RustParser::new(contents, &path.to_path(""), None);
-            ::rust_code_analysis::metrics(&parser, &path.to_path(""))
-                .context("Extracting rust_code_analysis metrics")
-                .map_err(|e| error!("{e}"))
-                .map(|space| (path, space))
-        })
-        // .map(|(path, mut space)| {
-        //     space.spaces.clear();
-        //     (path.to_string(), space)
-        // })
-        .map(|(_, space)| space)
-        .collect();
+fn parse_rca(file: &File<String>) -> Option<FuncSpace> {
+    let parser = RustParser::new(
+        file.content.as_bytes().to_vec(),
+        &file.path.to_path(""),
+        None,
+    );
+    let space = ::rust_code_analysis::metrics(&parser, &file.path.to_path(""))?;
+    valid_space(&space)?;
+    Some(space)
+}
 
+pub fn collect_rust_code_analysis<Obs: Observer<f64> + Default + Serialize>(
+    file_metrics: &[FuncSpace],
+) -> Result<BTreeMap<String, serde_json::Value>> {
     let mut statisics = RCAMetricsKinded::<Obs>::default();
     for function_space in file_metrics {
         statisics.observe_spaces(&function_space);
@@ -256,19 +266,28 @@ pub async fn collect_github_repo(crab: &LimitedCrab, repo_name: &str) -> Result<
         .await
         .context("Fetching repo")?;
 
-    let files = tokio::task::block_in_place(|| {
+    let (files, rca_files) = tokio::task::block_in_place(|| {
         let span = info_span!("parse_files").entered();
 
         text_files
-            .clone()
             .into_par_iter()
-            .filter_map(|f| File::parse(f, span.deref().clone()))
-            .collect::<Vec<_>>()
+            .filter_map(|f| Some((File::parse(f.clone(), span.deref().clone())?, f)))
+            .filter_map(|(file, rca_file)| {
+                let funcspace = parse_rca(&rca_file);
+                if funcspace.is_none() {
+                    error!(
+                        "Failed to parse {} for with Rust Code Analysis, skipping completely..",
+                        &rca_file.path
+                    )
+                }
+                Some((file, funcspace?))
+            })
+            .collect::<(Vec<_>, Vec<_>)>()
     });
 
     let mut metrics = tokio::task::block_in_place(move || collect_file_metrics(&files))?;
     let rca_metrics = tokio::task::block_in_place(|| {
-        collect_rust_code_analysis::<Unaggregated<f64>>(&text_files)
+        collect_rust_code_analysis::<Unaggregated<f64>>(&rca_files)
     })?;
     metrics.extend(rca_metrics);
     metrics.extend(
