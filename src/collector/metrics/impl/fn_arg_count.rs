@@ -23,30 +23,45 @@ impl<T: Monoid + Default> Monoid for FnArgsCount<T> {
     }
 }
 
-impl<Obs: Observer> Visit<'_> for FnArgsCount<Obs> {
-    fn visit_signature(&mut self, i: &'_ syn::Signature) {
-        let mutable = i
-            .inputs
-            .iter()
-            .filter(|arg| {
-                match arg {
-                    // only count mutable references, mut by move does not affect function
-                    // interface
-                    FnArg::Receiver(arg) => arg.mutability.is_some() && arg.reference.is_some(),
-                    FnArg::Typed(PatType { ty, .. }) => {
-                        let ty: &Type = &ty; // Box matching :clown_emoji:
-                        match ty {
-                            Type::Reference(reference) => reference.mutability.is_some(),
-                            _ => false,
-                        }
+fn count_mutable(signature: &syn::Signature) -> usize {
+    signature
+        .inputs
+        .iter()
+        .filter(|arg| {
+            match arg {
+                // only count mutable references, mut by move does not affect function
+                // interface
+                FnArg::Receiver(arg) => arg.mutability.is_some() && arg.reference.is_some(),
+                FnArg::Typed(PatType { ty, .. }) => {
+                    let ty: &Type = &ty; // Box matching :clown_emoji:
+                    match ty {
+                        Type::Reference(reference) => reference.mutability.is_some(),
+                        _ => false,
                     }
                 }
-            })
-            .count();
-
+            }
+        })
+        .count()
+}
+impl<Obs: Observer> Visit<'_> for FnArgsCount<Obs> {
+    fn visit_impl_item_fn(&mut self, i: &'_ syn::ImplItemFn) {
+        let mutable = count_mutable(&i.sig);
         self.mutable.observe(mutable);
+        visit::visit_impl_item_fn(self, i);
+    }
 
-        visit::visit_signature(self, i);
+    fn visit_item_fn(&mut self, i: &'_ syn::ItemFn) {
+        let mutable = count_mutable(&i.sig);
+        self.mutable.observe(mutable);
+        visit::visit_item_fn(self, i);
+    }
+
+    fn visit_trait_item_fn(&mut self, i: &'_ syn::TraitItemFn) {
+        if i.default.is_some() {
+            let mutable = count_mutable(&i.sig);
+            self.mutable.observe(mutable);
+        }
+        visit::visit_trait_item_fn(self, i);
     }
 
     //closures signatures are patterns, not fn signatures
