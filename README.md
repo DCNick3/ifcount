@@ -202,67 +202,67 @@ $ ifcount collect-local-repo path_to_your_repo
 - `trait_def.supertrait_count.avg`: Average number of supertraits within trait definitions.
 - `trait_def.supertrait_count.mode`: Mode (most common) number of supertraits within trait definitions.
 - `trait_def.supertrait_count.sum`: Total number of supertraits within trait definitions.
-- `rca.impl.cyclomatic.average`: Average cyclomatic complexity of code in impl block [1].
-- `rca.impl.cyclomatic.max`: Maximum cyclomatic complexity of code in impl block [1].
-- `rca.impl.cyclomatic.min`: Minimum cyclomatic complexity of code in impl block [1].
-- `rca.impl.cyclomatic.sum`: Sum of cyclomatic complexity of impl block [1]. 
-- `rca.impl.halstead.N1`: Halstead volume metric for impl block [1].
-- `rca.impl.halstead.N2`: Halstead vocabulary metric for impl block [1].
-- `rca.impl.halstead.bugs`: Estimated number of bugs in impl block using Halstead metric [1].
-- `rca.impl.halstead.difficulty`: Difficulty level of impl block calculated using Halstead metric [1].
-- `rca.impl.halstead.effort`: Effort required to write impl block using Halstead metric [1].
-- `rca.impl.halstead.estimated_program_length`: Estimated length of impl block using Halstead metric [1].
-- `rca.impl.halstead.length`: Length of impl block using Halstead metric [1].
-- `rca.impl.halstead.level`: Level of impl block calculated using Halstead metric [1].
-- `rca.impl.halstead.n1`: Number of distinct operators in impl block using Halstead metric [1].
-- `rca.impl.halstead.n2`: Number of distinct operands in impl block using Halstead metric [1].
-- `rca.impl.halstead.purity_ratio`: Purity ratio of impl block using Halstead metric [1].
-- `rca.impl.halstead.time`: Time required to write impl block using Halstead metric [1].
-- `rca.impl.halstead.vocabulary`: Vocabulary of impl block using Halstead metric [1].
-- `rca.impl.halstead.volume`: Volume of impl block using Halstead metric [1].  
-- `rca.impl.loc.blank`: Number of blank lines in impl block [1].
-- `rca.impl.loc.blank_average`: Average number of blank lines in impl block [1].
-- `rca.impl.loc.blank_max`: Maximum number of blank lines in impl block [1].
-- `rca.impl.loc.blank_min`: Minimum number of blank lines in impl block [1].
-- `rca.impl.loc.cloc`: Count of lines of impl block [1].
-- `rca.impl.loc.cloc_average`: Average count of lines of impl block [1].
-- `rca.impl.loc.cloc_max`: Maximum count of lines of impl block [1].
-- `rca.impl.loc.cloc_min`: Minimum count of lines of impl block [1].
-- `rca.impl.loc.lloc`: Logical lines of code in impl block [1].
-- `rca.impl.loc.lloc_average`: Average logical lines of code in impl block [1].
-- `rca.impl.loc.lloc_max`: Maximum logical lines of code in impl block [1].
-- `rca.impl.loc.lloc_min`: Minimum logical lines of code in impl block [1].
-- `rca.impl.loc.ploc`: Physical lines of code in impl block [1].
-- `rca.impl.loc.ploc_average`: Average physical lines of code in impl block [1].
-- `rca.impl.loc.ploc_max`: Maximum physical lines of code in impl block [1].
-- `rca.impl.loc.ploc_min`: Minimum physical lines of code in impl block [1].
-- `rca.impl.loc.sloc`: Source lines of code in impl block [1].
-- `rca.impl.loc.sloc_average`: Average source lines of code in impl block [1].
-- `rca.impl.loc.sloc_max`: Maximum source lines of code in impl block [1].
-- `rca.impl.loc.sloc_min`: Minimum source lines of code in impl block [1].
-- `rca.impl.mi.mi_original`: Maintainability Index of impl block based on the original formula [1].
-- `rca.impl.mi.mi_sei`: Maintainability Index of impl block based on the SEI formula [1].
-- `rca.impl.mi.mi_visual_studio`: Maintainability Index of impl block based on Visual Studio implementation [1].
-- `rca.impl.nargs.average`: Average number of arguments in impl block [1].
-- `rca.impl.nargs.average_closures`: Average number of arguments in closures in impl block [1].
-- `rca.impl.nargs.average_functions`: Average number of arguments in functions in impl block [1].
-- `rca.impl.nargs.closures_max`: Maximum number of arguments in closures in impl block [1].
-- `rca.impl.nargs.closures_min`: Minimum number of arguments in closures in impl block [1].
-- `rca.impl.nargs.functions_max`: Maximum number of arguments in functions in impl block [1].
-- `rca.impl.nargs.functions_min`: Minimum number of arguments in functions in impl block [1].
-- `rca.impl.nargs.total`: Total number of arguments in impl block [1].
-- `rca.impl.nargs.total_closures`: Total number of arguments in closures in impl block [1].
-- `rca.impl.nargs.total_functions`: Total number of arguments in functions in impl block [1].
-- `rca.impl.nom.average`: Average number of methods in impl block [1].
-- `rca.impl.nom.closures`: Number of methods in closures in impl block [1].
-- `rca.impl.nom.closures_average`: Average number of methods in closures in impl block [1].
-- `rca.impl.nom.closures_max`: Maximum number of methods in closures in impl block [1].
-- `rca.impl.nom.closures_min`: Minimum number of methods in closures in impl block [1].
-- `rca.impl.nom.functions`: Number of methods in functions in impl block [1].
-- `rca.impl.nom.functions_average`: Average number of methods in functions in impl block [1].
-- `rca.impl.nom.functions_max`: Maximum number of functions in impl block [1].
-- `rca.impl.nom.functions_min`: Minimum number of functions in impl block [1].
-- `rca.impl.nom.total`: Total number of methods in impl block [1].
+- `rca.impl.cyclomatic.average`: Average cyclomatic complexity of code in impl block [1]
+- `rca.impl.cyclomatic.max`: Maximum cyclomatic complexity of code in impl block [1]
+- `rca.impl.cyclomatic.min`: Minimum cyclomatic complexity of code in impl block [1]
+- `rca.impl.cyclomatic.sum`: Sum of cyclomatic complexity of impl block [1]
+- `rca.impl.halstead.N1`: Halstead volume metric for impl block [1]
+- `rca.impl.halstead.N2`: Halstead vocabulary metric for impl block [1]
+- `rca.impl.halstead.bugs`: Estimated number of bugs in impl block using Halstead metric [1]
+- `rca.impl.halstead.difficulty`: Difficulty level of impl block calculated using Halstead metric [1]
+- `rca.impl.halstead.effort`: Effort required to write impl block using Halstead metric [1]
+- `rca.impl.halstead.estimated_program_length`: Estimated length of impl block using Halstead metric [1]
+- `rca.impl.halstead.length`: Length of impl block using Halstead metric [1]
+- `rca.impl.halstead.level`: Level of impl block calculated using Halstead metric [1]
+- `rca.impl.halstead.n1`: Number of distinct operators in impl block using Halstead metric [1]
+- `rca.impl.halstead.n2`: Number of distinct operands in impl block using Halstead metric [1]
+- `rca.impl.halstead.purity_ratio`: Purity ratio of impl block using Halstead metric [1]
+- `rca.impl.halstead.time`: Time required to write impl block using Halstead metric [1]
+- `rca.impl.halstead.vocabulary`: Vocabulary of impl block using Halstead metric [1]
+- `rca.impl.halstead.volume`: Volume of impl block using Halstead metric [1]
+- `rca.impl.loc.blank`: Number of blank lines in impl block [1]
+- `rca.impl.loc.blank_average`: Average number of blank lines in impl block [1]
+- `rca.impl.loc.blank_max`: Maximum number of blank lines in impl block [1]
+- `rca.impl.loc.blank_min`: Minimum number of blank lines in impl block [1]
+- `rca.impl.loc.cloc`: Count of lines of impl block [1]
+- `rca.impl.loc.cloc_average`: Average count of lines of impl block [1]
+- `rca.impl.loc.cloc_max`: Maximum count of lines of impl block [1]
+- `rca.impl.loc.cloc_min`: Minimum count of lines of impl block [1]
+- `rca.impl.loc.lloc`: Logical lines of code in impl block [1]
+- `rca.impl.loc.lloc_average`: Average logical lines of code in impl block [1]
+- `rca.impl.loc.lloc_max`: Maximum logical lines of code in impl block [1]
+- `rca.impl.loc.lloc_min`: Minimum logical lines of code in impl block [1]
+- `rca.impl.loc.ploc`: Physical lines of code in impl block [1]
+- `rca.impl.loc.ploc_average`: Average physical lines of code in impl block [1]
+- `rca.impl.loc.ploc_max`: Maximum physical lines of code in impl block [1]
+- `rca.impl.loc.ploc_min`: Minimum physical lines of code in impl block [1]
+- `rca.impl.loc.sloc`: Source lines of code in impl block [1]
+- `rca.impl.loc.sloc_average`: Average source lines of code in impl block [1]
+- `rca.impl.loc.sloc_max`: Maximum source lines of code in impl block [1]
+- `rca.impl.loc.sloc_min`: Minimum source lines of code in impl block [1]
+- `rca.impl.mi.mi_original`: Maintainability Index of impl block based on the original formula [1]
+- `rca.impl.mi.mi_sei`: Maintainability Index of impl block based on the SEI formula [1]
+- `rca.impl.mi.mi_visual_studio`: Maintainability Index of impl block based on Visual Studio implementation [1]
+- `rca.impl.nargs.average`: Average number of arguments in impl block [1]
+- `rca.impl.nargs.average_closures`: Average number of arguments in closures in impl block [1]
+- `rca.impl.nargs.average_functions`: Average number of arguments in functions in impl block [1]
+- `rca.impl.nargs.closures_max`: Maximum number of arguments in closures in impl block [1]
+- `rca.impl.nargs.closures_min`: Minimum number of arguments in closures in impl block [1]
+- `rca.impl.nargs.functions_max`: Maximum number of arguments in functions in impl block [1]
+- `rca.impl.nargs.functions_min`: Minimum number of arguments in functions in impl block [1]
+- `rca.impl.nargs.total`: Total number of arguments in impl block [1]
+- `rca.impl.nargs.total_closures`: Total number of arguments in closures in impl block [1]
+- `rca.impl.nargs.total_functions`: Total number of arguments in functions in impl block [1]
+- `rca.impl.nom.average`: Average number of methods in impl block [1]
+- `rca.impl.nom.closures`: Number of methods in closures in impl block [1]
+- `rca.impl.nom.closures_average`: Average number of methods in closures in impl block [1]
+- `rca.impl.nom.closures_max`: Maximum number of methods in closures in impl block [1]
+- `rca.impl.nom.closures_min`: Minimum number of methods in closures in impl block [1]
+- `rca.impl.nom.functions`: Number of methods in functions in impl block [1]
+- `rca.impl.nom.functions_average`: Average number of methods in functions in impl block [1]
+- `rca.impl.nom.functions_max`: Maximum number of functions in impl block [1]
+- `rca.impl.nom.functions_min`: Minimum number of functions in impl block [1]
+- `rca.impl.nom.total`: Total number of methods in impl block [1]
 
 
 ### Cognitive Complexity Metrics for Structs
