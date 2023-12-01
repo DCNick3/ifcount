@@ -163,6 +163,7 @@ $ ifcount collect-local-repo path_to_your_repo
 - `rca.function.mi.mi_sei`: Maintainability index of functions (SEI method) [1]
 - `rca.function.mi.mi_visual_studio`: Maintainability index of functions (Visual Studio method) [1]
 
+
 ### Definition metrics
 
 - `enums.attr_count.avg`: Average number of attributes per enum.
@@ -201,67 +202,269 @@ $ ifcount collect-local-repo path_to_your_repo
 - `trait_def.supertrait_count.avg`: Average number of supertraits within trait definitions.
 - `trait_def.supertrait_count.mode`: Mode (most common) number of supertraits within trait definitions.
 - `trait_def.supertrait_count.sum`: Total number of supertraits within trait definitions.
-- `rca.impl.cyclomatic.average`: Average cyclomatic complexity of code in impl block  [1]
-- `rca.impl.cyclomatic.max`: Maximum cyclomatic complexity of code in impl block  [1]
-- `rca.impl.cyclomatic.min`: Minimum cyclomatic complexity of code in impl block  [1]
-- `rca.impl.cyclomatic.sum`: Sum of cyclomatic complexity of impl block  [1]
-- `rca.impl.halstead.N1`: Halstead volume metric for impl block  [1]
-- `rca.impl.halstead.N2`: Halstead vocabulary metric for impl block  [1]
-- `rca.impl.halstead.bugs`: Estimated number of bugs in impl block using Halstead metric [1]
-- `rca.impl.halstead.difficulty`: Difficulty level of impl block calculated using Halstead metric [1]
-- `rca.impl.halstead.effort`: Effort required to write impl block using Halstead metric [1]
-- `rca.impl.halstead.estimated_program_length`: Estimated length of impl block using Halstead metric [1]
-- `rca.impl.halstead.length`: Length of impl block using Halstead metric [1]
-- `rca.impl.halstead.level`: Level of impl block calculated using Halstead metric [1]
-- `rca.impl.halstead.n1`: Number of distinct operators in impl block using Halstead metric [1]
-- `rca.impl.halstead.n2`: Number of distinct operands in impl block using Halstead metric [1]
-- `rca.impl.halstead.purity_ratio`: Purity ratio of impl block using Halstead metric [1]
-- `rca.impl.halstead.time`: Time required to write impl block using Halstead metric [1]
-- `rca.impl.halstead.vocabulary`: Vocabulary of impl block using Halstead metric [1]
-- `rca.impl.halstead.volume`: Volume of impl block using Halstead metric [1]
-- `rca.impl.loc.blank`: Number of blank lines in impl block  [1]
-- `rca.impl.loc.blank_average`: Average number of blank lines in impl block  [1]
-- `rca.impl.loc.blank_max`: Maximum number of blank lines in impl block  [1]
-- `rca.impl.loc.blank_min`: Minimum number of blank lines in impl block  [1]
-- `rca.impl.loc.cloc`: Count of lines of impl block  [1]
-- `rca.impl.loc.cloc_average`: Average count of lines of impl block  [1]
-- `rca.impl.loc.cloc_max`: Maximum count of lines of impl block  [1]
-- `rca.impl.loc.cloc_min`: Minimum count of lines of impl block  [1]
-- `rca.impl.loc.lloc`: Logical lines of code in impl block  [1]
-- `rca.impl.loc.lloc_average`: Average logical lines of code in impl block  [1]
-- `rca.impl.loc.lloc_max`: Maximum logical lines of code in impl block  [1]
-- `rca.impl.loc.lloc_min`: Minimum logical lines of code in impl block  [1]
-- `rca.impl.loc.ploc`: Physical lines of code in impl block  [1]
-- `rca.impl.loc.ploc_average`: Average physical lines of code in impl block  [1]
-- `rca.impl.loc.ploc_max`: Maximum physical lines of code in impl block  [1]
-- `rca.impl.loc.ploc_min`: Minimum physical lines of code in impl block  [1]
-- `rca.impl.loc.sloc`: Source lines of code in impl block  [1]
-- `rca.impl.loc.sloc_average`: Average source lines of code in impl block  [1]
-- `rca.impl.loc.sloc_max`: Maximum source lines of code in impl block  [1]
-- `rca.impl.loc.sloc_min`: Minimum source lines of code inimpl block  [1]
-- `rca.impl.mi.mi_original`: Maintainability Index of impl block based on the original formula [1]
-- `rca.impl.mi.mi_sei`: Maintainability Index of impl block based on the SEI formula [1]
-- `rca.impl.mi.mi_visual_studio`: Maintainability Index of impl block based on Visual Studio implementation [1]
-- `rca.impl.nargs.average`: Average number of arguments in impl block  [1]
-- `rca.impl.nargs.average_closures`: Average number of arguments in closures in impl block  [1]
-- `rca.impl.nargs.average_functions`: Average number of arguments in functions in impl block  [1]
-- `rca.impl.nargs.closures_max`: Maximum number of arguments in closures in impl block  [1]
-- `rca.impl.nargs.closures_min`: Minimum number of arguments in closures in impl block  [1]
-- `rca.impl.nargs.functions_max`: Maximum number of arguments in functions in impl block  [1]
-- `rca.impl.nargs.functions_min`: Minimum number of arguments in functions in impl block  [1]
-- `rca.impl.nargs.total`: Total number of arguments in impl block  [1]
-- `rca.impl.nargs.total_closures`: Total number of arguments in closures in impl block  [1]
-- `rca.impl.nargs.total_functions`: Total number of arguments in functions in impl block  [1]
-- `rca.impl.nom.average`: Average number of methods in impl block  [1]
-- `rca.impl.nom.closures`: Number of methods in closures in impl block  [1]
-- `rca.impl.nom.closures_average`: Average number of methods in closures in impl block  [1]
-- `rca.impl.nom.closures_max`: Maximum number of methods in closures in impl block  [1]
-- `rca.impl.nom.closures_min`: Minimum number of methods in closures in impl block  [1]
-- `rca.impl.nom.functions`: Number of methods in functions in impl block  [1]
-- `rca.impl.nom.functions_average`: Average number of methods in functions in impl block  [1]
-- `rca.impl.nom.functions_max`: Maximum number of functions in impl block  [1]
-- `rca.impl.nom.functions_min`: Minimum number of functions in impl block  [1]
-- `rca.impl.nom.total`: Total number of methods in impl block  [1]
+- `rca.impl.cyclomatic.average`: Average cyclomatic complexity of code in impl block [1].
+- `rca.impl.cyclomatic.max`: Maximum cyclomatic complexity of code in impl block [1].
+- `rca.impl.cyclomatic.min`: Minimum cyclomatic complexity of code in impl block [1].
+- `rca.impl.cyclomatic.sum`: Sum of cyclomatic complexity of impl block [1]. 
+- `rca.impl.halstead.N1`: Halstead volume metric for impl block [1].
+- `rca.impl.halstead.N2`: Halstead vocabulary metric for impl block [1].
+- `rca.impl.halstead.bugs`: Estimated number of bugs in impl block using Halstead metric [1].
+- `rca.impl.halstead.difficulty`: Difficulty level of impl block calculated using Halstead metric [1].
+- `rca.impl.halstead.effort`: Effort required to write impl block using Halstead metric [1].
+- `rca.impl.halstead.estimated_program_length`: Estimated length of impl block using Halstead metric [1].
+- `rca.impl.halstead.length`: Length of impl block using Halstead metric [1].
+- `rca.impl.halstead.level`: Level of impl block calculated using Halstead metric [1].
+- `rca.impl.halstead.n1`: Number of distinct operators in impl block using Halstead metric [1].
+- `rca.impl.halstead.n2`: Number of distinct operands in impl block using Halstead metric [1].
+- `rca.impl.halstead.purity_ratio`: Purity ratio of impl block using Halstead metric [1].
+- `rca.impl.halstead.time`: Time required to write impl block using Halstead metric [1].
+- `rca.impl.halstead.vocabulary`: Vocabulary of impl block using Halstead metric [1].
+- `rca.impl.halstead.volume`: Volume of impl block using Halstead metric [1].  
+- `rca.impl.loc.blank`: Number of blank lines in impl block [1].
+- `rca.impl.loc.blank_average`: Average number of blank lines in impl block [1].
+- `rca.impl.loc.blank_max`: Maximum number of blank lines in impl block [1].
+- `rca.impl.loc.blank_min`: Minimum number of blank lines in impl block [1].
+- `rca.impl.loc.cloc`: Count of lines of impl block [1].
+- `rca.impl.loc.cloc_average`: Average count of lines of impl block [1].
+- `rca.impl.loc.cloc_max`: Maximum count of lines of impl block [1].
+- `rca.impl.loc.cloc_min`: Minimum count of lines of impl block [1].
+- `rca.impl.loc.lloc`: Logical lines of code in impl block [1].
+- `rca.impl.loc.lloc_average`: Average logical lines of code in impl block [1].
+- `rca.impl.loc.lloc_max`: Maximum logical lines of code in impl block [1].
+- `rca.impl.loc.lloc_min`: Minimum logical lines of code in impl block [1].
+- `rca.impl.loc.ploc`: Physical lines of code in impl block [1].
+- `rca.impl.loc.ploc_average`: Average physical lines of code in impl block [1].
+- `rca.impl.loc.ploc_max`: Maximum physical lines of code in impl block [1].
+- `rca.impl.loc.ploc_min`: Minimum physical lines of code in impl block [1].
+- `rca.impl.loc.sloc`: Source lines of code in impl block [1].
+- `rca.impl.loc.sloc_average`: Average source lines of code in impl block [1].
+- `rca.impl.loc.sloc_max`: Maximum source lines of code in impl block [1].
+- `rca.impl.loc.sloc_min`: Minimum source lines of code in impl block [1].
+- `rca.impl.mi.mi_original`: Maintainability Index of impl block based on the original formula [1].
+- `rca.impl.mi.mi_sei`: Maintainability Index of impl block based on the SEI formula [1].
+- `rca.impl.mi.mi_visual_studio`: Maintainability Index of impl block based on Visual Studio implementation [1].
+- `rca.impl.nargs.average`: Average number of arguments in impl block [1].
+- `rca.impl.nargs.average_closures`: Average number of arguments in closures in impl block [1].
+- `rca.impl.nargs.average_functions`: Average number of arguments in functions in impl block [1].
+- `rca.impl.nargs.closures_max`: Maximum number of arguments in closures in impl block [1].
+- `rca.impl.nargs.closures_min`: Minimum number of arguments in closures in impl block [1].
+- `rca.impl.nargs.functions_max`: Maximum number of arguments in functions in impl block [1].
+- `rca.impl.nargs.functions_min`: Minimum number of arguments in functions in impl block [1].
+- `rca.impl.nargs.total`: Total number of arguments in impl block [1].
+- `rca.impl.nargs.total_closures`: Total number of arguments in closures in impl block [1].
+- `rca.impl.nargs.total_functions`: Total number of arguments in functions in impl block [1].
+- `rca.impl.nom.average`: Average number of methods in impl block [1].
+- `rca.impl.nom.closures`: Number of methods in closures in impl block [1].
+- `rca.impl.nom.closures_average`: Average number of methods in closures in impl block [1].
+- `rca.impl.nom.closures_max`: Maximum number of methods in closures in impl block [1].
+- `rca.impl.nom.closures_min`: Minimum number of methods in closures in impl block [1].
+- `rca.impl.nom.functions`: Number of methods in functions in impl block [1].
+- `rca.impl.nom.functions_average`: Average number of methods in functions in impl block [1].
+- `rca.impl.nom.functions_max`: Maximum number of functions in impl block [1].
+- `rca.impl.nom.functions_min`: Minimum number of functions in impl block [1].
+- `rca.impl.nom.total`: Total number of methods in impl block [1].
+
+
+### Cognitive Complexity Metrics for Structs
+
+- `rca.struct.cognitive.average`: The average cognitive complexity of the code within struct definitions [1]
+- `rca.struct.cognitive.max`: The maximum cognitive complexity of the code within struct definitions [1]
+- `rca.struct.cognitive.min`: The minimum cognitive complexity of the code within struct definitions [1]
+- `rca.struct.cognitive.sum`: The sum of cognitive complexity across all functions within struct definitions [1]
+
+### Cyclomatic Complexity Metrics for Structs
+
+- `rca.struct.cyclomatic.average`: The average cyclomatic complexity of the code within struct definitions [1]
+- `rca.struct.cyclomatic.max`: The maximum cyclomatic complexity of the code within struct definitions [1]
+- `rca.struct.cyclomatic.min`: The minimum cyclomatic complexity of the code within struct definitions [1]
+- `rca.struct.cyclomatic.sum`: The sum of cyclomatic complexity across all functions within struct definitions [1]
+
+### Halstead Metrics for Structs
+
+- `rca.struct.halstead.N1`: Halstead's N1 metric for struct definitions [1]
+- `rca.struct.halstead.N2`: Halstead's N2 metric for struct definitions [1]
+- `rca.struct.halstead.bugs`: The estimated number of bugs in struct definitions using Halstead's metrics [1]
+- `rca.struct.halstead.difficulty`: The difficulty level of struct definitions calculated using Halstead's metrics [1]
+- `rca.struct.halstead.effort`: The effort required to write struct definitions using Halstead's metrics [1]
+- `rca.struct.halstead.estimated_program_length`: The estimated length of struct definitions using Halstead's metrics [1]
+- `rca.struct.halstead.length`: The length of struct definitions using Halstead's metrics [1]
+- `rca.struct.halstead.level`: The level of struct definitions calculated using Halstead's metrics [1]
+- `rca.struct.halstead.n1`: The number of distinct operators in struct definitions using Halstead's metrics [1]
+- `rca.struct.halstead.n2`: The number of distinct operands in struct definitions using Halstead's metrics [1]
+- `rca.struct.halstead.purity_ratio`: The purity ratio of struct definitions using Halstead's metrics [1]
+- `rca.struct.halstead.time`: The time required to write struct definitions using Halstead's metrics [1]
+- `rca.struct.halstead.vocabulary`: The vocabulary of struct definitions using Halstead's metrics [1]
+- `rca.struct.halstead.volume`: The volume of struct definitions using Halstead's metrics [1]
+
+### Line of Code Metrics for Structs
+
+- `rca.struct.loc.blank`: The number of blank lines in struct definitions [1]
+- `rca.struct.loc.blank_average`: The average number of blank lines in struct definitions [1]
+- `rca.struct.loc.blank_max`: The maximum number of blank lines in struct definitions [1]
+- `rca.struct.loc.blank_min`: The minimum number of blank lines in struct definitions [1]
+- `rca.struct.loc.cloc`: The count of lines of code in struct definitions [1]
+- `rca.struct.loc.cloc_average`: The average count of lines of code in struct definitions [1]
+- `rca.struct.loc.cloc_max`: The maximum count of lines of code in struct definitions [1]
+- `rca.struct.loc.cloc_min`: The minimum count of lines of code in struct definitions [1]
+- `rca.struct.loc.lloc`: The logical lines of code in struct definitions [1]
+- `rca.struct.loc.lloc_average`: The average logical lines of code in struct definitions [1]
+- `rca.struct.loc.lloc_max`: The maximum logical lines of code in struct definitions [1]
+- `rca.struct.loc.lloc_min`: The minimum logical lines of code in struct definitions [1]
+- `rca.struct.loc.ploc`: The physical lines of code in struct definitions [1]
+- `rca.struct.loc.ploc_average`: The average physical lines of code in struct definitions [1]
+- `rca.struct.loc.ploc_max`: The maximum physical lines of code in struct definitions [1]
+- `rca.struct.loc.ploc_min`: The minimum physical lines of code in struct definitions [1]
+- `rca.struct.loc.sloc`: The source lines of code in struct definitions [1]
+- `rca.struct.loc.sloc_average`: The average source lines of code in struct definitions [1]
+- `rca.struct.loc.sloc_max`: The maximum source lines of code in struct definitions [1]
+- `rca.struct.loc.sloc_min`: The minimum source lines of code in struct definitions [1]
+
+### Maintainability Index Metrics for Structs
+
+- `rca.struct.mi.mi_original`: Maintainability Index of struct definitions based on the original formula [1]
+- `rca.struct.mi.mi_sei`: Maintainability Index of struct definitions based on the SEI formula [1]
+- `rca.struct.mi.mi_visual_studio`: Maintainability Index of struct definitions based on Visual Studio implementation [1]
+
+### Function Metrics for Structs
+
+- `rca.struct.nargs.average`: Average number of arguments in functions within struct definitions [1]
+- `rca.struct.nargs.average_closures`: Average number of arguments in closures within struct definitions [1]
+- `rca.struct.nargs.average_functions`: Average number of arguments in functions within struct definitions [1]
+- `rca.struct.nargs.closures_max`: Maximum number of arguments in closures within struct definitions [1]
+- `rca.struct.nargs.closures_min`: Minimum number of arguments in closures within struct definitions [1]
+- `rca.struct.nargs.functions_max`: Maximum number of arguments in functions within struct definitions [1]
+- `rca.struct.nargs.functions_min`: Minimum number of arguments in functions within struct definitions [1]
+- `rca.struct.nargs.total`: Total number of arguments in functions within struct definitions [1]
+- `rca.struct.nargs.total_closures`: Total number of arguments in closures within struct definitions [1]
+- `rca.struct.nargs.total_functions`: Total number of arguments in functions within struct definitions [1]
+
+### Exit Metrics for Structs
+
+- `rca.struct.nexits.average`: Average number of exit points in functions within struct definitions [1]
+- `rca.struct.nexits.max`: Maximum number of exit points in functions within struct definitions [1]
+- `rca.struct.nexits.min`: Minimum number of exit points in functions within struct definitions [1]
+- `rca.struct.nexits.sum`: Total number of exit points in functions within struct definitions.
+
+### Method Metrics for Structs
+
+- `rca.struct.nom.average`: Average number of methods within struct definitions [1]
+- `rca.struct.nom.closures`: Number of methods in closures within struct definitions [1]
+- `rca.struct.nom.closures_average`: Average number of methods in closures within struct definitions [1]
+- `rca.struct.nom.closures_max`: Maximum number of methods in closures within struct definitions [1]
+- `rca.struct.nom.closures_min`: Minimum number of methods in closures within struct definitions [1]
+- `rca.struct.nom.functions`: Number of methods in functions within struct definitions [1]
+- `rca.struct.nom.functions_average`: Average number of methods in functions within struct definitions [1]
+- `rca.struct.nom.functions_max`: Maximum number of methods in functions within struct definitions [1]
+- `rca.struct.nom.functions_min`: Minimum number of methods in functions within struct definitions [1]
+- `rca.struct.nom.total`: Total number of methods within struct definitions.
+
+### Cognitive Complexity Metrics for Traits
+
+- `rca.trait.cognitive.average`: The average cognitive complexity of the code within trait a definition [1]
+- `rca.trait.cognitive.max`: The maximum cognitive complexity of the code within trait a definition [1]
+- `rca.trait.cognitive.min`: The minimum cognitive complexity of the code within trait a definition [1]
+- `rca.trait.cognitive.sum`: The sum of cognitive complexity across all functions within a trait definition [1]
+
+### Cyclomatic Complexity Metrics for Traits
+
+- `rca.trait.cyclomatic.average`: The average cyclomatic complexity of the code within trait a definition [1]
+- `rca.trait.cyclomatic.max`: The maximum cyclomatic complexity of the code within a trait definition [1]
+- `rca.trait.cyclomatic.min`: The minimum cyclomatic complexity of the code within a trait definition [1]
+- `rca.trait.cyclomatic.sum`: The sum of cyclomatic complexity across all functions within a trait definition [1]
+
+### Halstead Metrics for Traits
+
+- `rca.trait.halstead.N1`: Halstead's N1 metric for trait definitions [1]
+- `rca.trait.halstead.N2`: Halstead's N2 metric for trait definitions [1]
+- `rca.trait.halstead.bugs`: The estimated number of bugs in trait definitions using Halstead's metrics [1]
+- `rca.trait.halstead.difficulty`: The difficulty level of trait definitions calculated using Halstead's metrics [1]
+- `rca.trait.halstead.effort`: The effort required to write trait definitions using Halstead's metrics [1]
+- `rca.trait.halstead.estimated_program_length`: The estimated length of trait definitions using Halstead's metrics [1]
+- `rca.trait.halstead.length`: The length of trait definitions using Halstead's metrics [1]
+- `rca.trait.halstead.level`: The level of trait definitions calculated using Halstead's metrics [1]
+- `rca.trait.halstead.n1`: The number of distinct operators in trait definitions using Halstead's metrics [1]
+- `rca.trait.halstead.n2`: The number of distinct operands in trait definitions using Halstead's metrics [1]
+- `rca.trait.halstead.purity_ratio`: The purity ratio of trait definitions using Halstead's metrics [1]
+- `rca.trait.halstead.time`: The time required to write trait definitions using Halstead's metrics [1]
+- `rca.trait.halstead.vocabulary`: The vocabulary of trait definitions using Halstead's metrics [1]
+- `rca.trait.halstead.volume`: The volume of trait definitions using Halstead's metrics [1]
+
+### Line of Code Metrics for Traits
+
+- `rca.trait.loc.blank`: The number of blank lines in trait definitions [1]
+- `rca.trait.loc.blank_average`: The average number of blank lines in trait definitions [1]
+- `rca.trait.loc.blank_max`: The maximum number of blank lines in trait definitions [1]
+- `rca.trait.loc.blank_min`: The minimum number of blank lines in trait definitions [1]
+- `rca.trait.loc.cloc`: The count of lines of code in trait definitions [1]
+- `rca.trait.loc.cloc_average`: The average count of lines of code in trait definitions [1]
+- `rca.trait.loc.cloc_max`: The maximum count of lines of code in trait definitions [1]
+- `rca.trait.loc.cloc_min`: The minimum count of lines of code in trait definitions [1]
+- `rca.trait.loc.lloc`: The logical lines of code in trait definitions [1]
+- `rca.trait.loc.lloc_average`: The average logical lines of code in trait definitions [1]
+- `rca.trait.loc.lloc_max`: The maximum logical lines of code in trait definitions [1]
+- `rca.trait.loc.lloc_min`: The minimum logical lines of code in trait definitions [1]
+- `rca.trait.loc.ploc`: The physical lines of code in trait definitions [1]
+- `rca.trait.loc.ploc_average`: The average physical lines of code in trait definitions [1]
+- `rca.trait.loc.ploc_max`: The maximum physical lines of code in trait definitions [1]
+- `rca.trait.loc.ploc_min`: The minimum physical lines of code in trait definitions [1]
+- `rca.trait.loc.sloc`: The source lines of code in trait definitions [1]
+- `rca.trait.loc.sloc_average`: The average source lines of code in trait definitions [1]
+- `rca.trait.loc.sloc_max`: The maximum source lines of code in trait definitions [1]
+- `rca.trait.loc.sloc_min`: The minimum source lines of code in trait definitions [1]
+
+### Maintainability Index Metrics for Traits
+
+- `rca.trait.mi.mi_original`: Maintainability Index of trait definitions based on the original formula [1]
+- `rca.trait.mi.mi_sei`: Maintainability Index of trait definitions based on the SEI formula [1]
+- `rca.trait.mi.mi_visual_studio`: Maintainability Index of trait definitions based on Visual Studio implementation [1]
+
+### Function Metrics for Traits
+
+- `rca.trait.nargs.average`: Average number of arguments in functions within trait definitions [1]
+- `rca.trait.nargs.average_closures`: Average number of arguments in closures within trait definitions [1]
+- `rca.trait.nargs.average_functions`: Average number of arguments in functions within trait definitions [1]
+- `rca.trait.nargs.closures_max`: Maximum number of arguments in closures within trait definitions [1]
+- `rca.trait.nargs.closures_min`: Minimum number of arguments in closures within trait definitions [1]
+- `rca.trait.nargs.functions_max`: Maximum number of arguments in functions within trait definitions [1]
+- `rca.trait.nargs.functions_min`: Minimum number of arguments in functions within trait definitions [1]
+- `rca.trait.nargs.total`: Total number of arguments in functions within trait definitions [1]
+- `rca.trait.nargs.total_closures`: Total number of arguments in closures within trait definitions [1]
+- `rca.trait.nargs.total_functions`: Total number of arguments in functions within trait definitions [1]
+
+### Exit Metrics for Traits
+
+- `rca.trait.nexits.average`: Average number of exit points in functions within trait definitions [1]
+- `rca.trait.nexits.max`: Maximum number of exit points in functions within trait definitions [1]
+- `rca.trait.nexits.min`: Minimum number of exit points in functions within trait definitions [1]
+- `rca.trait.nexits.sum`: Total number of exit points in functions within trait definitions [1]
+
+### Method Metrics for Traits
+
+- `rca.trait.nom.average`: Average number of methods within trait definitions [1]
+- `rca.trait.nom.closures`: Number of methods in closures within trait definitions [1]
+- `rca.trait.nom.closures_average`: Average number of methods in closures per trait definition [1]
+
+ within trait definitions.
+- `rca.trait.nom.closures_max`: Maximum number of methods in closures within trait definitions [1]
+- `rca.trait.nom.closures_min`: Minimum number of methods in closures within trait definitions [1]
+- `rca.trait.nom.functions`: Number of methods in functions within trait definitions [1]
+- `rca.trait.nom.functions_average`: Average number of methods in functions within trait definitions [1]
+- `rca.trait.nom.functions_max`: Maximum number of functions in trait definitions [1]
+- `rca.trait.nom.functions_min`: Minimum number of functions in trait definitions [1]
+- `rca.trait.nom.total`: Total number of methods within trait definitions [1]
+
+### Additional Metrics
+
+- `statement_size`: The size of statements in the code [1]
+- `structs.attrs_count`: Total number of attributes across all structs [1]
+- `structs.field_attr_count`: Total number of attributes across all struct fields [1]
+- `structs.fields_count`: Total number of fields across all structs [1]
+- `structs.public_fields_count`: Total number of public fields across all structs [1]
+- `trait_def.all_fn_count`: Total number of functions within trait definitions [1]
+- `trait_def.assoc_type_count`: Total number of associated types within trait definitions [1]
+- `trait_def.default_fn_count`: Total number of default functions within trait definitions [1]
+- `trait_def.generic_param_count`: Total number of generic parameters within trait definitions [1]
+- `trait_def.supertrait_count`: Total number of supertraits within trait definitions [1]
 
 ### Repository metrics
 
